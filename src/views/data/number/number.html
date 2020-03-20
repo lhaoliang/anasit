@@ -1,0 +1,246 @@
+<div class="box-container ">
+    <!-- 搜索 -->
+    <el-card class="box-card">
+        <template>
+            <el-tabs v-model="activeName" @tab-click="handleClick">
+                <!-- <el-tab-pane label="全部" name="-1">
+                        <span slot="label"> 全部
+                            <sup class="badge-number badge-info">{{count.all}}</sup>
+                        </span>
+                    </el-tab-pane> -->
+                <el-tab-pane label="公司数值" name="1">
+                </el-tab-pane>
+                <el-tab-pane label="单项目数值" name="2">
+                </el-tab-pane>
+                <el-tab-pane v-if='roleId!=3' label="区域数值" name="3">
+                </el-tab-pane>
+            </el-tabs>
+        </template>
+        <el-form :inline="true" class="demo-form-inline">
+            <div>
+
+                <el-form-item>
+
+                    <template>
+                        <el-select filterable v-model="typeValue" @change='changeType' placeholder="请选择搜索类型"
+                            class="findShop">
+                            <el-option v-for="item in typeList" :key="item.value" :label="item.label"
+                                :value="item.value">
+                            </el-option>
+                        </el-select>
+                    </template>
+
+                    <template>
+                        <el-date-picker key='1' v-if="typeValue!=1" v-model='time' value-format='yyyy-MM'
+                            format="yyyy-MM" type="monthrange" start-placeholder="开始月份" @change='timeChange'
+                            end-placeholder="结束月份">
+                        </el-date-picker>
+
+                        <!-- <el-date-picker key='11' v-if="typeValue!=1" v-model="startMonth" value-format='yyyy-MM' type="month" @change='startChange'
+                            placeholder="开始月份">
+                        </el-date-picker>
+
+                        <el-date-picker key='12' v-if="typeValue!=1" v-model="endMonth" value-format='yyyy-MM' type="month" @change='endChange'
+                            placeholder="结束月份">
+                        </el-date-picker> -->
+
+                    </template>
+
+                    <template>
+                        <el-select key='2' @change="termChange" multiple :multiple-limit='2' v-if="typeValue!=2"
+                            filterable v-model="terms" placeholder="请选择学期" class="findShop"
+                            style="margin-left: 20px">
+                            <el-option v-for="item in termList" :key="item.id" :label="item.name" :value="item.id">
+                            </el-option>
+                        </el-select>
+                    </template>
+
+                    <template v-if='roleId!=3'>
+                        <el-select filterable v-model="statisSearch.companyId" @change='getCompanyList'
+                            placeholder="请选择公司" class="findShop" style="margin-left: 20px">
+                            <el-option label='全部分公司' value=''></el-option>
+                            <el-option v-for="item in companyList" :key="item.id" :label="item.name" :value="item.id">
+                            </el-option>
+                        </el-select>
+                    </template>
+                    <!-- <template>
+                        <el-select v-show="statisSearch.companyId != ''&& typeValue==2" style="margin-left:10px;"
+                            @change='getshopDown' v-model="statisSearch.shopId" filterable placeholder="请选择分店名称">
+                            <el-option v-for="item in shopList" :key="item.id" :label="item.name" :value="item.id">
+                            </el-option>
+                        </el-select>
+                    </template> -->
+                    <template>
+                        <el-select @change='getList' filterable style="margin-left:10px;" v-model="statisSearch.windowGenreId"
+                            placeholder="档口类型" class="findShop">
+                            <el-option value='' label='全部类型'></el-option>
+                            <el-option v-for="item in itemTypeDown" :key="item.id" :label="item.name" :value="item.id">
+                            </el-option>
+                        </el-select>
+                    </template>
+                </el-form-item>
+
+            </div>
+            <div class="text item">
+                <el-form-item>
+                    <el-button type="primary" @click="getList">搜索</el-button>
+                    <el-button type="primary" @click="onRest">重置</el-button>
+                    <!-- <el-button @click="exportExcel" v-if='roleId!=3' icon="el-icon-download" type="info"
+                        :disable="exportDisable" :loading="exportDisable" style="margin-left: 10px">导出</el-button> -->
+                </el-form-item>
+            </div>
+        </el-form>
+    </el-card>
+    <div class="space"></div>
+    <!-- 表格 -->
+    <el-card class="box-card" v-loading="loading" element-loading-text="拼命加载中">
+        <div style="width:100%;overflow-x: auto"
+            v-show='(statisSearch.yearMonth == statisSearch.yearMonthTwo || !statisSearch.yearMonthTwo)&&terms.length<2'>
+            <table class="gridtable" border style="min-width: 900px">
+                <thead>
+                    <tr>
+                        <th>序号</th>
+                        <th v-show="statisSearch.shopId!=''">档口名称</th>
+                        <th v-show="statisSearch.shopId!=''">档口类型</th>
+                        <!-- <th v-show="statisSearch.companyId != ''&&typeValue==2">
+                            {{statisSearch.shopId == ''?'分店名称':'所属分店'}}</th> -->
+                        <th>{{statisSearch.companyId == ''?'分公司名称':'所属分公司'}}</th>
+                        <th>营业额</th>
+                        <th>实收金额</th>
+                        <th>实收比例</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(item,index) in tableData" :key="item.id" style="text-align:center;" ref="hightlight">
+                        <td>{{ ++index }}</td>
+                        <td v-show="statisSearch.shopId!=''">{{item.projectName}}</td>
+                        <td v-show="statisSearch.shopId!=''">{{item.windowGenreName}}</td>
+                        <!-- <td v-show="statisSearch.companyId != ''&&typeValue==2">{{ item.shopName }}</td> -->
+                        <td>{{ item.companyName }}</td>
+                        <td>{{ item.turnover }}</td>
+                        <td>{{ item.actualMoney }}</td>
+                        <td>{{ item.rate }}%</td>
+                    </tr>
+                    <tr style="background: #f6f6f6;color:red;text-align:center;">
+                        <td style="font-weight:600;">总计</td>
+                        <td v-show="statisSearch.shopId!=''" style="font-weight:600;">--</td>
+                        <td v-show="statisSearch.shopId!=''" style="font-weight:600;">--</td>
+                        <!-- <td v-show="statisSearch.companyId != ''&&typeValue==2" style="font-weight:600;">--</td> -->
+                        <td style="font-weight:600;">--</td>
+                        <td style="font-weight:600;">{{total.totalTurnover}}</td>
+                        <td style="font-weight:600;">{{total.totalActualMoney}}</td>
+                        <td style="font-weight:600;">{{total.totalRate}}%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <!--两个学期比较-->
+        <div>
+            <table class="gridtable" border style="min-width: 900px"
+                v-show='terms.length==2'>
+                <thead>
+                    <tr>
+                        <th rowspan="2">序号</th>
+                        <th rowspan="2" v-show="statisSearch.shopId!=''">档口名称</th>
+                        <!-- <th rowspan="2" v-show="statisSearch.companyId != ''"> -->
+                            <!-- {{statisSearch.shopId == ''?'分店名称':'所属分店'}}</th> -->
+                        <th rowspan="2">{{statisSearch.companyId == ''?'分公司名称':'所属分公司'}}</th>
+                        <th colspan="2">营业额</th>
+                        <th colspan="2">实收金额</th>
+                        <th colspan="2">实收比例</th>
+                    </tr>
+                    <tr style="text-align: center;">
+                        <td>{{termOne}}</td>
+                        <td>{{termTwo}}</td>
+                        <td>{{termOne}}</td>
+                        <td>{{termTwo}}</td>
+                        <td>{{termOne}}</td>
+                        <td>{{termTwo}}</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(item,index) in tableData" :key="item.id" style="text-align:center;" ref="hightlight">
+                        <td>{{ ++index }}</td>
+                        <td v-show="statisSearch.shopId!=''">{{item.projectName}}</td>
+                        <!-- <td v-show="statisSearch.companyId != ''">{{ item.shopName }}</td> -->
+                        <td>{{ item.companyName }}</td>
+                        <td v-if='statisSearch.companyId==""'>{{ item.turnoverOne }}</td>
+                        <td v-if='statisSearch.companyId>0'>{{item.turnoverOne}}</td>
+                        <td>{{ item.turnoverTwo }}</td>
+                        <td v-if='statisSearch.companyId==""'>{{ item.actualMoneyOne }}</td>
+                        <td v-if='statisSearch.companyId>0'>{{ item.actualMoneyOne }}</td>
+                        <td>{{ item.actualMoneyTwo }}</td>
+                        <td>{{ item.rateOne }}%</td>
+                        <td>{{ item.rateTwo }}%</td>
+                    </tr>
+                    <tr style="background: #f6f6f6;color:red;text-align:center;">
+                        <td style="font-weight:600;">总计</td>
+                        <!-- <td v-show="statisSearch.shopId!=''" style="font-weight:600;">--</td> -->
+                        <!-- <td v-show="statisSearch.companyId != ''" style="font-weight:600;">--</td> -->
+                        <td style="font-weight:600;">--</td>
+                        <td style="font-weight:600;">{{total.totalTurnoverOne}}</td>
+                        <td style="font-weight:600;">{{total.totalTurnoverTwo}}</td>
+                        <td style="font-weight:600;">{{total.totalActualMoneyOne}}</td>
+                        <td style="font-weight:600;">{{total.totalActualMoneyTwo}}</td>
+                        <td style="font-weight:600;">{{total.totalRateOne}}%</td>
+                        <td style="font-weight:600;">{{total.totalRateTwo}}%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <!--两个月比较-->
+        <div>
+            <table class="gridtable" border style="min-width: 900px"
+                v-show='statisSearch.yearMonth != statisSearch.yearMonthTwo && !!statisSearch.yearMonthTwo'>
+                <thead>
+                    <tr>
+                        <th rowspan="2">序号</th>
+                        <th rowspan="2" v-show="statisSearch.shopId!=''">档口名称</th>
+                        <!-- <th rowspan="2" v-show="statisSearch.companyId != ''">
+                            {{statisSearch.shopId == ''?'分店名称':'所属分店'}}</th> -->
+                        <th rowspan="2">{{statisSearch.companyId == ''?'分公司名称':'所属分公司'}}</th>
+                        <th colspan="2">营业额</th>
+                        <th colspan="2">实收金额</th>
+                        <th colspan="2">实收比例</th>
+                    </tr>
+                    <tr style="text-align: center;">
+                        <td>{{mouthOne}}月</td>
+                        <td>{{mouthTwo}}月</td>
+                        <td>{{mouthOne}}月</td>
+                        <td>{{mouthTwo}}月</td>
+                        <td>{{mouthOne}}月</td>
+                        <td>{{mouthTwo}}月</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(item,index) in tableData" :key="item.id" style="text-align:center;" ref="hightlight">
+                        <td>{{ ++index }}</td>
+                        <td v-show="statisSearch.shopId!=''">{{item.projectName}}</td>
+                        <!-- <td v-show="statisSearch.companyId != ''">{{ item.shopName }}</td> -->
+                        <td>{{ item.companyName }}</td>
+                        <td v-if='statisSearch.companyId==""'>{{ item.turnoverOne }}</td>
+                        <td v-if='statisSearch.companyId>0'>{{item.turnoverOne}}</td>
+                        <td>{{ item.turnoverTwo }}</td>
+                        <td v-if='statisSearch.companyId==""'>{{ item.actualMoneyOne }}</td>
+                        <td v-if='statisSearch.companyId>0'>{{ item.actualMoneyOne }}</td>
+                        <td>{{ item.actualMoneyTwo }}</td>
+                        <td>{{ item.rate }}%</td>
+                        <td>{{ item.rateTwo }}%</td>
+                    </tr>
+                    <tr style="background: #f6f6f6;color:red;text-align:center;">
+                        <td style="font-weight:600;">总计</td>
+                        <!-- <td v-show="statisSearch.shopId!=''" style="font-weight:600;">--</td> -->
+                        <!-- <td v-show="statisSearch.companyId != ''" style="font-weight:600;">--</td> -->
+                        <td style="font-weight:600;">--</td>
+                        <td style="font-weight:600;">{{total.totalTurnover}}</td>
+                        <td style="font-weight:600;">{{total.totalTurnoverTwo}}</td>
+                        <td style="font-weight:600;">{{total.totalActualMoney}}</td>
+                        <td style="font-weight:600;">{{total.totalActualMoneyTwo}}</td>
+                        <td style="font-weight:600;">{{total.totalRate}}%</td>
+                        <td style="font-weight:600;">{{total.totalRateTwo}}%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </el-card>
+</div>

@@ -1,0 +1,44 @@
+<div class="sort">
+    <div class="head-title">
+        <span>参数设置</span>
+    </div>
+    <el-form label-position='right' ref="form" style="margin-left: 80px;" v-if='roleId!=3' key='1'>
+        <el-form-item label="营业额上报日期设定:">
+            分店每月的 <el-input v-model='params.turnoverReportingTime' placeholder="请输入数值" style="width: 100px;"></el-input> 号上报该月的营业额
+        </el-form-item>
+        <el-form-item label="营业额上报截至日期设定:">
+            分店每月的 <el-input v-model='params.turnoverReportingEndtime' placeholder="请输入数值" style="width: 100px;"></el-input>
+            号完成该月的营业额上报
+        </el-form-item>
+        <el-form-item label="巡店检查截至日期设定:">
+            <div> 分公司检查，每月的 <el-input v-model='params.companyCheckEndtime' placeholder="请输入数值" style="width: 100px;"></el-input>
+                号完成该月的巡店检查</div>
+        </el-form-item>
+        <el-form-item class="label-hidden" label="巡店检查截至日期设定:">
+            <div> 总公司检查，每年的 <el-input v-model='params.groupCheckEndtime' style="width: 100px;" placeholder="请输入数值">
+                </el-input>
+                日完成该年的巡店检查</div>
+        </el-form-item>
+        <el-form-item label="排行榜查看日期设定:">
+            <div> 分店排行，每月的 <el-input v-model='params.shopRankViewtime' placeholder="请输入数值" style="width: 100px;"></el-input>
+                号可以查看该月的排行榜</div>
+        </el-form-item>
+        <el-form-item class="label-hidden" label="排行榜查看日期设定:">
+            <div> 分公司排行，每年的 <el-input v-model='params.companyRankViewtime' style="width: 100px;" placeholder="请输入数值">
+                </el-input>
+                日可以查看该年的排行榜</div>
+        </el-form-item>
+        <el-form-item label="客服设定:">
+            总公司客服电话 <el-input v-model='params.tel' placeholder="请输入电话号码" style="width: 200px;"></el-input>
+        </el-form-item>
+        <el-button @click='addParams' style="margin-left:100px;">保存设置</el-button>
+    </el-form>
+
+
+    <el-form label-position='right' ref="form" style="margin-left: 80px;" key='2' v-if='roleId==3'>
+        <el-form-item label="客服设定:">
+            本公司客服电话 <el-input v-model='branchPhone' placeholder="请输入电话号码" style="width: 200px;"></el-input>
+        </el-form-item>
+        <el-button  @click='addCompanyParams' style="margin-left:30px;">保存设置</el-button>
+    </el-form>
+</div>

@@ -1,0 +1,169 @@
+<div class="sort" v-loading="importLoading">
+    <!-- 搜索 -->
+    <el-card class="box-card" v-if='isShow=="1"'>
+        <el-form :inline="true" class="demo-form-inline">
+            <div  v-if='roleId != 3' class="text item ">
+                <el-form-item>
+                    <el-button style="margin-right:10px;" type="danger" @click="forBlack('add')">添加黑名单</el-button>
+                </el-form-item>
+                <el-form-item>
+                    <el-dropdown>
+                        <el-button type="primary">批量导入</el-button>
+                        <el-dropdown-menu slot="dropdown" style="width: 100px;text-align: center;">
+                            <el-dropdown-item>
+                                <el-button type="text" @click="templateDownload">模板下载</el-button>
+                            </el-dropdown-item>
+                            <el-dropdown-item>
+                                <el-upload class="upload-demo"
+                                    :action="server + 'managerapi/custome/window/blacklist/import'" :headers="headers"
+                                    :before-upload="beforeExcelUpload" :on-success="excelUploadSuccess"
+                                    :show-file-list="false" name="upload">
+                                    <el-button type="text">批量导入</el-button>
+                                </el-upload>
+                            </el-dropdown-item>
+                        </el-dropdown-menu>
+                    </el-dropdown>
+                </el-form-item>
+            </div>
+            <div>
+                <el-form-item >
+                    <template>
+                        <el-select v-model="search.companyId" filterable placeholder="请选择分公司" class="findShop">
+                            <el-option v-for="(item,index1) in company" :key="index1" :label="item.name" :value="item.id">
+                            </el-option>
+                        </el-select>
+                    </template>
+                </el-form-item>
+
+                <el-form-item>
+                    <el-input v-model="search.keyWord" placeholder='黑名单姓名关键词检索'>
+                    </el-input>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" icon="el-icon-search" @click="onSubmitSearch">搜索</el-button>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="warning" @click="onRest" icon="el-icon-refresh">重置</el-button>
+                </el-form-item>
+                <el-form-item v-if='roleId != 3'>
+                    <el-button @click="exportExcel" icon="el-icon-download" type="info" :disable="exportDisable"
+                        :loading="exportDisable">导出</el-button>
+                </el-form-item>
+            </div>
+        </el-form>
+    </el-card>
+    <div class="space"></div>
+    <!-- 表格 -->
+    <el-card class="box-card" v-loading="loading" element-loading-text="拼命加载中" v-if='isShow=="1"'>
+        <el-table ref="multipleTable" highlight-current-row stripe border :data="blacklist" tooltip-effect="dark"
+            style="width: 100%" :default-sort="{prop: 'date', order: 'descending'}">
+            <el-table-column prop="id" label="序号" type="index" srortable width=60>
+
+            </el-table-column>
+            <el-table-column prop="name" label="姓名" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.name }}</span>
+                </template>
+            </el-table-column>
+
+
+            <el-table-column prop="idNum" label="身份证号码" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.idno }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="company" label="原所在公司" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.companyName }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="item" label="经营项目" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.projectName }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="reason" label="录入原因" srortable width=200>
+                <template slot-scope="scope">
+                    <span
+                        style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">{{ scope.row.reason }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="time" label="录入时间" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.createdAt }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="操作">
+                <template slot-scope="scope">
+                    <div class="dis">
+                        <el-button size="mini" type='primary' @click="forBlack(scope,true)">查看</el-button>
+                        <el-button size="mini" v-if='roleId != 3' type='primary' @click="forBlack(scope)">编辑</el-button>
+                        <el-button size="mini" v-if='roleId != 3' type="danger" @click="toDel(scope.row.id)">删除</el-button>
+                    </div>
+                </template>
+            </el-table-column>
+        </el-table>
+        <template>
+            <div class="block">
+                <div class="space"></div>
+                <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange"
+                    :current-page="currentPage" :page-sizes="[3, 10, 15, 20]" :page-size="10"
+                    layout="total, sizes, prev, pager, next, jumper" :total="total" prev-text="上一页" next-text="下一页">
+                </el-pagination>
+            </div>
+        </template>
+    </el-card>
+    <!-- 详情 -->
+    <el-card class="addShop" v-if='isShow=="2"'>
+        <div class="head-title">
+            <span v-show="type=='add'">添加黑名单</span>
+            <span v-show="type=='edit'">编辑黑名单</span>
+        </div>
+        <el-form ref="form" :model="windows" label-width="140px" style="margin-left: 80px;">
+            <el-form-item label="黑名单姓名:">
+                <el-input v-if='!flag' v-model="windows.name" placeholder="请输入黑名单姓名" style="width: 300px;"></el-input>
+                <span v-else>{{windows.name}}</span>
+            </el-form-item>
+            <el-form-item label="身份证号码:">
+                <el-input v-if='!flag' v-model="windows.idno" placeholder="请输入身份证号码" style="width: 300px;"></el-input>
+                <span v-else>{{windows.idno}}</span>
+            </el-form-item>
+            <el-form-item label="原所在公司:">
+                <el-select v-if='!flag' filterable v-model="windows.companyId" placeholder="请选择对应的分公司" style="width: 300px;">
+                    <el-option v-for="(item,index) in company" :key="index" :label="item.name" :value="item.id">
+                    </el-option>
+                </el-select>
+                <span>{{windows.companyName}}</span>
+            </el-form-item>
+
+            <el-form-item label="经营项目:">
+                <el-select v-if='!flag' filterable v-model="windows.productTypeId" placeholder="请选择项目类型" @change="typeChange">
+                    <el-option v-for="(item,index3) in productTypeList" :key="index3" :label="item.name" :value="item.id">
+                    </el-option>
+                </el-select>
+                <!-- <span v-else>{{}}</span> -->
+                <el-cascader v-if='!flag' placeholder="请选择项目分类" v-model="windows.productCatId" :options="productCatList" filterable @change="catChange"></el-cascader>
+                <span v-else>{{windows.projectName}}</span>
+               <!-- <el-select v-model="windows.productId" filterable placeholder="请选择经营项目" @change="productChange">
+                    <el-option v-for="item in productList" :key="item.id" :label="item.name" :value="item.id">
+                    </el-option>
+                </el-select>-->
+                <!-- <el-input v-model="windows.projectName" placeholder="请输入其经营项目" style="width: 300px;"></el-input> -->
+            </el-form-item>
+
+            <el-form-item label="录入原因:">
+                <el-input v-if='!flag' type="textarea" v-model="windows.reason" placeholder="请输入录入原因" style="width: 400px;">
+                </el-input>
+                <span v-else>{{windows.reason}}</span>
+            </el-form-item>
+
+            <el-form-item style="margin-top: 30px; text-align:left;">
+                <el-button type="primary" v-show="type=='add'" style="margin-right: 30px;" @click='onAdd'>确认添加
+                </el-button>
+                <el-button type="primary" v-show="type=='edit'&&!flag" style="margin-right: 30px;" @click='onEdit'>确认修改
+                </el-button>
+                <el-button @click='returnMain'>返回列表</el-button>
+            </el-form-item>
+        </el-form>
+    </el-card>
+</div>

@@ -1,0 +1,62 @@
+*{
+    padding: 0;
+    margin :0;
+}
+.branch {
+
+    .box-container {
+        padding: 20px;
+    }
+    .el-card__body {
+        padding: 20px;
+        padding-top: 30px;
+    }
+    
+    .dis {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .space {
+        height: 30px;
+    }
+    
+    .avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+    }
+    
+    .demo-form-inline {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        
+        .el-autocomplete{
+            margin-right: 10px;
+            width: 250px;
+        }
+        
+    }
+    .cell {
+        text-align: center;
+    }
+    .el-pagination span:not([class*="suffix"]), .el-pagination button {
+        padding: 0 10px;
+    }
+    .el-form-item__label {
+        text-align: right;
+        font-weight: normal;
+    }
+    .el-dialog__body{
+        padding: 10px 20px;
+    }
+}
+.qu-title{
+    text-indent: 2em;
+    margin: 16px 0;
+}
+.con:not(:first-child){
+    margin-top: 20px;
+}

@@ -1,0 +1,244 @@
+<div class="file" v-loading="importLoading">
+    <!-- 搜索 -->
+    <el-card class="box-card" v-if='isShow=="1"'>
+        <el-form :inline="true" :model="search" class="demo-form-inline">
+            <div class="text item">
+                <el-form-item>
+                    <el-dropdown>
+                        <el-button type="primary">批量导入</el-button>
+                        <el-dropdown-menu slot="dropdown" style="width: 100px;text-align: center;">
+                            <el-dropdown-item>
+                                <el-button type="text" @click="templateDownload">模板下载</el-button>
+                            </el-dropdown-item>
+                            <el-dropdown-item>
+                                <el-upload
+                                    class="upload-demo"
+                                    :action="server + '/managerapi/custome/window/import'"
+                                    :headers="headers"
+                                    :before-upload="beforeExcelUpload"
+                                    :on-success="excelUploadSuccess"
+                                    :show-file-list="false"
+                                    name="upload"
+                                >
+                                    <el-button type="text">批量导入</el-button>
+                                </el-upload>
+                            </el-dropdown-item>
+                        </el-dropdown-menu>
+                    </el-dropdown>
+
+                    <el-button v-if="roleId!=3" @click="exportExcel" style="margin-left: 20px" icon="el-icon-download" type="info" :disable="exportDisable" :loading="exportDisable">导出</el-button>
+                </el-form-item>
+            </div>
+            <div style="display: flex; flex-wrap: wrap;">
+                <el-form-item>
+                    <template>
+                        <el-select filterable v-model="search.termId" placeholder="请选择对应的学期" class="findShop">
+                            <el-option v-for="item in termList" :key="item.id" :label="item.name" :value="item.id"> </el-option>
+                        </el-select>
+                    </template>
+                </el-form-item>
+                <el-form-item v-if="roleId != 3">
+                    <template>
+                        <el-select filterable v-model="search.companyId" @change="getCompanyId" placeholder="请选择对应的分公司" class="findShop" style="margin-left: 20px">
+                            <el-option v-for="item in company" :key="item.id" :label="item.name" :value="item.id"> </el-option>
+                        </el-select>
+                    </template>
+                </el-form-item>
+                <el-form-item>
+                    <template>
+                        <el-select filterable v-model="search.shopId" placeholder="请选择对应的分店" class="findShop" style="margin-left: 20px">
+                            <el-option v-for="item in shopList" :key="item.id" :label="item.name" :value="item.id"> </el-option>
+                        </el-select>
+                    </template>
+                </el-form-item>
+                <el-form-item>
+                    <el-input v-model="search.keyWord" placeholder="档口/合同签订人关键词检索"> </el-input>
+                </el-form-item>
+
+                <el-form-item>
+                    <el-button type="primary" @click="onSubmitSearch" icon="el-icon-search" style="margin-left: 20px">搜索 </el-button>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="warning" @click="onRest" icon="el-icon-refresh" style="margin-left: 20px">重置 </el-button>
+                </el-form-item>
+                <el-form-item><el-button type="primary" @click="forGate('add')" style="margin-left: 20px">添加档口</el-button></el-form-item>
+            </div>
+        </el-form>
+    </el-card>
+    <div class="space"></div>
+    <!-- 表格 -->
+    <el-card class="box-card" v-loading="loading" element-loading-text="拼命加载中" v-if='isShow=="1"'>
+        <el-table ref="multipleTable" highlight-current-row stripe border :data="gateList" tooltip-effect="dark" style="width: 100%" :default-sort="{prop: 'date', order: 'descending'}">
+            <el-table-column prop="id" label="窗口号" type="index" srortable width="80">
+                <template slot-scope="scope">
+                    <span>{{ scope.row.sn }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="gate" label="档口名称" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.name }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="gate" label="分店" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.shopName }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="name" label="签订人" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.cooperatorName }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="phone" label="签订人电话" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.cooperatorPhone }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="number" label="身份证号" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.cooperatorIdno }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="deposit" label="押金、风险金" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.deposit }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="rent" label="租金" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.rental }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="light" label="水电气" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.waterEleRate }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="wash" label="洗消费" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.cleanRate }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="sanitary" label="卫生费" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.sanitationRate }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="public" label="公摊" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.shareMoney }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="ohter" label="其他" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.otherMoney }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="操作" width="150">
+                <template slot-scope="scope">
+                    <div class="dis">
+                        <el-button size="mini" type="primary" @click="forGate(scope)">编辑 </el-button>
+                        <el-button size="mini" type="danger" @click="toDel(scope.row.id)">删除</el-button>
+                    </div>
+                </template>
+            </el-table-column>
+        </el-table>
+        <template>
+            <div class="block">
+                <div class="space"></div>
+                <el-pagination
+                    background
+                    @size-change="handleSizeChange"
+                    @current-change="handleCurrentChange"
+                    :current-page="currentPage"
+                    :page-sizes="[5, 10, 15, 20]"
+                    :page-size="10"
+                    layout="total, sizes, prev, pager, next, jumper"
+                    :total="total"
+                    prev-text="上一页"
+                    next-text="下一页"
+                >
+                </el-pagination>
+            </div>
+        </template>
+    </el-card>
+    <!-- 详情 -->
+    <el-card class="addShop" v-if='isShow=="2"'>
+        <div class="head-title">
+            {{title?'添加档口':'编辑档口'}}
+        </div>
+        <el-form ref="form" :model="windows" label-width="140px" style="margin-left: 80px;">
+            <el-form-item label="所属周期:">
+                <el-select filterable v-model="windows.termId" placeholder="请选择对应周期" style="width: 300px;">
+                    <el-option v-for="item in termList" :key="item.id" :label="item.name" :value="item.id"> </el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item label="档口类型">
+                <el-select v-model="windows.windowGenreId" filterable placeholder="请选择对应的档口类型" @change="typeChange" style="width: 300px;">
+                    <el-option v-for="item in gateType" :key="item.id" :label="item.name" :value="item.id"> </el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item label="档口项目分类">
+                <el-select v-model="windows.projectGenreId" filterable placeholder="请选择对应的档口项目分类" @change="catChange" style="width: 300px;">
+                    <el-option v-for="item in gateItemSort" :key="item.id" :label="item.name" :value="item.id"> </el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item label="档口项目名称:">
+                <el-select v-model="windows.projectId" filterable placeholder="请选择档口项目(名称)" @change="productChange" style="width: 300px;">
+                    <el-option v-for="item in gateProject" :key="item.id" :label="item.name" :value="item.id"> </el-option>
+                </el-select>
+            </el-form-item>
+            <!-- <el-form-item>
+                <el-cascader placeholder="请选择项目分类" v-model="windows.productCatId" :options="productCatList" filterable @change="test1"></el-cascader>
+            </el-form-item> -->
+            <el-form-item label="所属分公司:" v-if="roleId != 3">
+                <el-select v-model="windows.companyId" @change="getAddCompanyId" filterable placeholder="请选择对应的分公司" style="width: 300px;">
+                    <el-option v-for="item in company" :key="item.id" :label="item.name" :value="item.id"> </el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item label="所属分店:">
+                <el-select v-model="windows.shopId" filterable placeholder="请选择对应的分店" style="width: 300px;">
+                    <el-option v-for="item in shopList" :key="item.id" :label="item.name" :value="item.id"> </el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item label="窗口序号:">
+                <el-input v-model="windows.sn" placeholder="请输入窗口序号(如:1)" style="width: 300px;"></el-input>
+            </el-form-item>
+            <el-form-item label="签订人姓名:">
+                <el-input v-model="windows.cooperatorName" placeholder="请输入合同签订人姓名" style="width: 300px;"></el-input>
+            </el-form-item>
+            <el-form-item label="签订人身份证号:">
+                <el-input v-model="windows.cooperatorIdno" placeholder="请输入合同签订人身份证号码" style="width: 300px;"></el-input>
+            </el-form-item>
+            <el-form-item label="签订人电话:">
+                <el-input v-model="windows.cooperatorPhone" placeholder="请输入合同签订人电话号码" style="width: 300px;"></el-input>
+            </el-form-item>
+            <el-form-item label="押金、风险金:">
+                <el-input v-model="windows.deposit" placeholder="请输入押金、风险金(如:30000)" style="width: 300px;"></el-input>
+            </el-form-item>
+            <el-form-item label="租金:">
+                <el-input v-model="windows.rental" placeholder="请输入租金金额" style="width: 300px;"></el-input>
+            </el-form-item>
+            <el-form-item label="水电气:">
+                <el-input v-model="windows.waterEleRate" placeholder="请输入水电气比例" style="width: 300px;"></el-input>
+            </el-form-item>
+            <el-form-item label="洗消费:">
+                <el-input v-model="windows.cleanRate" placeholder="请输入洗消费比例" style="width: 300px;"></el-input>
+            </el-form-item>
+            <el-form-item label="卫生费:">
+                <el-input v-model="windows.sanitationRate" placeholder="请输入卫生费比例" style="width: 300px;"></el-input>
+            </el-form-item>
+            <el-form-item label="公摊:">
+                <el-input v-model="windows.shareMoney" placeholder="请输入公摊金额" style="width: 300px;"></el-input>
+            </el-form-item>
+            <el-form-item label="其他:">
+                <el-input v-model="windows.otherMoney" placeholder="请输入其他金额" style="width: 300px;"></el-input>
+            </el-form-item>
+            <el-form-item style="margin-top: 30px; text-align:left;">
+                <el-button type="primary" v-show="type=='add'" style="margin-right: 30px;" @click="onAdd">确认添加 </el-button>
+                <el-button type="primary" v-show="type=='edit'" style="margin-right: 30px;" @click="onEdit">确认编辑 </el-button>
+                <el-button @click="returnMain">返回列表</el-button>
+            </el-form-item>
+        </el-form>
+    </el-card>
+</div>

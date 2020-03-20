@@ -1,0 +1,68 @@
+<el-card shadow>
+  <div>
+    <div class="text item">
+      <el-form :inline="true" class="demo-form-inline">
+        <el-form-item label="标题:">
+          <el-input @keyup.enter.native="getList" clearable v-model="search.title" placeholder="请输入标题">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="内容:">
+          <el-input @keyup.enter.native="getList" clearable v-model="search.content" placeholder="请输入内容">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="时间:">
+          <el-date-picker type="datetimerange" :picker-options="pickerOptions1" value="time" v-model="search.date"
+            range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" align="right">
+          </el-date-picker>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" icon="el-icon-search" @click="loadData">搜索</el-button>
+          <!-- <el-button type="primary" icon="el-icon-circle-plus-outline" >
+            添加</el-button> -->
+          <el-button type="warning" icon="el-icon-refresh">重置</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+    <div class="message-page-con message-category-con">
+      <el-menu width="auto" >
+        <el-menu-item  @click="handleSelect(1)">
+          <span class="category-title">系统消息</span>
+          <sup class="badge-number" v-bind:class="[count.sysCount>0?'badge-danger':'gray-dadge']">{{count.sysCount}}</sup>
+          
+        </el-menu-item>
+        <el-menu-item @click="handleSelect(2)">
+          <span class="category-title">首发消息</span>
+          <sup class="badge-number" v-bind:class="[count.firstCount>0?'badge-danger':'gray-dadge']">{{count.firstCount}}</sup>
+        </el-menu-item>
+        <el-menu-item  @click="handleSelect(3)">
+          <span class="category-title">预约消息</span>
+          <sup class="badge-number" v-bind:class="[count.preCount>0?'badge-danger':'gray-dadge']">{{count.preCount}}</sup>
+        </el-menu-item>
+        <el-menu-item @click="handleSelect(4)">
+          <span class="category-title">提问消息</span>
+          <sup class="badge-number" v-bind:class="[count.tryCount>0?'badge-danger':'gray-dadge']">{{count.tryCount}}</sup>
+        </el-menu-item>
+      </el-menu>
+    </div>
+    <div class="message-page-con message-list-con">
+      <el-menu width="auto">
+        <el-menu-item v-for="item in tableData" :name="item.id" :key="`msg_${item.id}`"  @click="handleView(item)">
+          <div>
+            <p class="msg-title">{{ item.title }} <span class="msg-time">({{item.createdAt}})</span></p>
+            <i style="margin-left: 360px;position: relative;
+            top: -70px;" class="el-icon-delete" @click.stop="deleteMessage(item)"></i>
+          </div>
+        </el-menu-item>
+      </el-menu>
+    </div>
+    <div class="message-page-con message-view-con">
+      <div class="message-view-header">
+        <h2 class="message-view-title">{{ showingMsgItem.title }}</h2>
+        <time class="message-view-time">{{ showingMsgItem.createdAt }}</time>
+        <div class="message-view-time">{{ showingMsgItem.content }}</div>
+
+      </div>
+      <div v-html="messageContent"></div>
+    </div>
+  </div>
+</el-card>

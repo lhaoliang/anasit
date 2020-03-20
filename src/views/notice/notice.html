@@ -1,0 +1,170 @@
+<div class="sort">
+    <!-- 搜索 -->
+    <el-card class="box-card" v-if='isShow=="1"'>
+        <el-form :inline="true" class="demo-form-inline">
+            <div class="text item" style="display: flex;flex-wrap:wrap;">
+                <el-form-item>
+                    <template>
+                        <el-date-picker v-model="valueTime" format="yyyy-MM-dd" type="daterange"
+                            range-separator="~"  start-placeholder="开始日期" value-format="yyyy-MM-dd" end-placeholder="结束日期">
+                        </el-date-picker>
+                    </template>
+                </el-form-item>
+                <el-form-item>
+                    <el-input v-model="search.title" placeholder="消息标题关键词检索">
+                    </el-input>
+                </el-form-item>
+                <el-form-item>
+                    <template>
+                        <el-select v-model="search.type" placeholder="请选择消息类型">
+                            <el-option v-for="item in options" :key="item.value" :label="item.label"
+                                :value="item.value">
+                            </el-option>
+                        </el-select>
+                    </template>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="getNoticeList" icon="el-icon-search">搜索</el-button>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="warning" @click="onRest" icon="el-icon-refresh">重置</el-button>
+                </el-form-item>
+                <el-form-item v-if='roleId!=3'>
+                    <el-button type="primary" @click="forMessage('add')">发布消息</el-button>
+                </el-form-item>
+            </div>
+
+        </el-form>
+    </el-card>
+    <div class="space"></div>
+    <!-- 表格 -->
+    <el-card class="box-card" v-loading="loading" element-loading-text="拼命加载中" v-if='isShow=="1"'>
+        <el-table ref="multipleTable" highlight-current-row stripe border :data="noticeList" tooltip-effect="dark"
+            style="width: 100%" :default-sort="{prop: 'date', order: 'descending'}">
+
+            <el-table-column prop="id" label="序号" type="index" srortable width=60>
+
+            </el-table-column>
+            <el-table-column prop="title" label="消息标题" srortable width=320>
+                <template slot-scope="scope">
+                    <span
+                        style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">{{ scope.row.title }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="type" label="消息类型" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.type == 1 ? '重要文件' : '平台通知' }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column v-if='roleId==5' prop="obj" label="通知对象" srortable>
+                <template slot-scope="scope">
+                    <span style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">{{ scope.row.acceptUser }}</span>
+                </template>
+            </el-table-column>
+
+            <el-table-column prop="time" label="发布时间" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.createdAt }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="操作">
+                <template slot-scope="scope">
+                    <div class="dis">
+                        <el-button size="mini" type="primary" @click="forMessage(scope)">查看</el-button>
+                        <el-button v-if='roleId!=3' size="mini" type="danger" @click="deleteMsg(scope)">删除</el-button>
+                    </div>
+                </template>
+            </el-table-column>
+        </el-table>
+        <template>
+            <div class="block">
+                <div class="space"></div>
+                <el-pagination background :current-page="currentPage" :page-sizes="[5, 10, 15, 20]" :page-size="10"
+                    @size-change="handleSizeChange" @current-change="handleCurrentChange"
+                    layout="total, sizes, prev, pager, next, jumper" :total="total" prev-text="上一页" next-text="下一页">
+                </el-pagination>
+            </div>
+        </template>
+    </el-card>
+    <!-- 详情 -->
+    <el-card class="addShop" v-if='isShow=="2"' v-loading="loading" element-loading-text="拼命加载中">
+        <div class="head-title">
+            <span v-show="type=='add'">发布消息</span>
+            <span v-show="type=='detail'">消息详情</span>
+        </div>
+        <el-form ref="form" :model="windows" label-width="100px" style="margin-left: 80px;">
+            <el-form-item :label="type!='detail'&&'roleId!=5'?'通知对象:':''">
+                <el-cascader collapse-tags :options="acceptUser" clearable v-show="type=='add'" v-model="windows.acceptUser"
+                    :props="{ multiple: true }" :show-all-levels="false" @change="acceptUserChange"
+                    style="width:500px;"></el-cascader>
+                <span v-show="type=='detail'&&roleId==5">{{windows.acceptUser}}</span>
+            </el-form-item>
+            <el-form-item label="消息类型:">
+                <template>
+                    <el-select v-show="type=='add'" filterable v-model="windows.type" placeholder="请选择消息类型"
+                        class="findShop">
+                        <el-option v-for="item in msgList" :key="item.value" :label="item.label" :value="item.value">
+                        </el-option>
+                    </el-select>
+                </template>
+                <span v-show="type=='detail'">
+                    <span v-show='windows.type==1'>重要文件</span>
+                    <span v-show='windows.type==2'>平台消息</span>
+                </span>
+            </el-form-item>
+            <el-form-item label="消息标题:">
+                <el-input type="textarea" v-model="windows.title" placeholder="请输入消息标题" v-show="type=='add'"
+                    style="width: 500px;"></el-input>
+                <span v-show="type=='detail'">{{windows.title}}</span>
+            </el-form-item>
+
+            <el-form-item label="消息内容:" style="width: 500px;">
+                <!-- <el-input type="textarea" v-model="windows.content" placeholder="请输入消息标题" v-show="type=='add'"
+                    style="width: 500px; margin-bottom: 10px;">
+                </el-input> -->
+                <div class="grid-content" v-show="type=='add'">
+                    <!-- 图片上传组件辅助-->
+                    <el-upload class="avatar-uploader" id="quill-upload"
+                        :action="server+'/managerapi/system/image/upload'" name="img" :headers="headers"
+                        :show-file-list="false" :on-success="uploadImageSuccess" :on-error="uploadError"
+                        :before-upload="beforeUpload">
+                    </el-upload>
+                    <quill-editor v-model="windows.content" ref="myQuillEditor" :options="editorOption"
+                        @blur="onEditorBlur($event)" @focus="onEditorFocus($event)" @ready="onEditorReady($event)"
+                        style="width: 500px;">
+                    </quill-editor>
+                </div>
+                <!-- <el-upload v-show="type=='add' && windows.type==1" name="img" class="upload-demo" :headers="headers"
+                    :action="server+'managerapi/system/image/upload'" :on-preview="handlePreview"
+                    :on-remove="handleRemove" :on-success="handleAvatarSuccess" :before-remove="beforeRemove" :on-exceed="handleExceed" :file-list="fileList">
+                    <el-button  type="success" style="margin-top: 20px;">点击上传附件</el-button>
+                </el-upload> -->
+                <el-upload v-show="type=='add' && windows.type==1" class="upload-demo"
+                    :action="server + 'managerapi/system/image/upload'" :file-list="fileList" :headers="headers"
+                    :before-upload="beforeUpload" :on-success="(res,file,fileList)=>uploadSuccess(1,file,fileList)"
+                    name="img" style="margin-top: 10px;">
+                    <el-button size="small" type="primary" plain>点击上传附件<i class="el-icon-upload el-icon--right"></i>
+                    </el-button>
+                    <!-- <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div> -->
+                </el-upload>
+
+                <div v-show="type=='detail'">
+                    <span v-html="windows.content"></span>
+                </div>
+            </el-form-item>
+            <el-form-item label="附件:" v-show="type=='detail'  && windows.type==1">
+                <a :href="server + windows.attachFile" target="view_window"
+                    style="color: blue">{{windows.attachFileName}}</a>
+            </el-form-item>
+            <el-form-item label="发布时间:" v-show="type=='detail'">
+                {{windows.time}}
+            </el-form-item>
+
+            <el-form-item style="margin-top: 30px; text-align:left;">
+                <el-button @click="onAdd" type='primary' v-show="type=='add'">确认发布</el-button>
+                <el-button @click='isShow=1'>返回列表</el-button>
+            </el-form-item>
+        </el-form>
+    </el-card>
+
+</div>

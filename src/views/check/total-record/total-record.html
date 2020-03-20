@@ -1,0 +1,185 @@
+<div class="app-container" v-loading="importLoading">
+    <!-- 搜索 -->
+    <el-card class="box-card">
+        <template>
+            <el-tabs v-model="activeName" @tab-click="handleClick">
+                <!-- <el-tab-pane label="全部" name="-1">
+                    <span slot="label"> 全部
+                        <sup class="badge-number badge-info">{{count.all}}</sup>
+                    </span>
+                </el-tab-pane> -->
+                <el-tab-pane label="分公司记录" name="1">
+                    <span slot="label"> 分公司记录
+                    </span>
+                </el-tab-pane>
+                <el-tab-pane label="总部记录" name="2">
+                    <span slot="label"> 总部记录
+                    </span>
+                </el-tab-pane>
+                <el-tab-pane label="未检查名单" name="3">
+                    <span slot="label"> 未检查名单
+                    </span>
+                </el-tab-pane>
+                <!-- <el-tab-pane label="未检测名单" name="2">
+                    <span slot="label"> 未检测名单
+                        <sup class="badge-number badge-info">{{count.end}}</sup>
+                    </span>
+                </el-tab-pane> -->
+            </el-tabs>
+        </template>
+        <div class="text item">
+            <el-form :inline="true" class="demo-form-inline">
+
+                <el-form-item label="名称:">
+                    <el-input @keyup.enter.native="getList" clearable v-model="search.keyWord" placeholder="分店关键词搜索">
+                    </el-input>
+                </el-form-item>
+                <el-form-item v-if="roleId != 3">
+                    <el-select filterable style="margin-right:10px;" v-model="search.companyId" placeholder="公司检查">
+                        <el-option clearable key="" label="全部分公司" value="">
+                        </el-option>
+                        <el-option v-for="item in companyList" clearable :key="item.id" :label="item.name"
+                            :value="item.id">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="时间:" key="1">
+                    <el-date-picker value-format="yyyy-MM" type="monthrange" v-model="date" range-separator="-"
+                        start-placeholder="开始年月" end-placeholder="结束年月" align="right">
+                    </el-date-picker>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" icon="el-icon-search" @click="getList">搜索</el-button>
+                    <el-button @click="exportExcel" icon="el-icon-download" type="info" :disable="exportDisable"
+                        :loading="exportDisable">导出</el-button>
+                    <el-button type="warning" @click="onRest" icon="el-icon-refresh">重置</el-button>
+                </el-form-item>
+            </el-form>
+        </div>
+    </el-card>
+    <div class="space"></div>
+    <!-- 表格 -->
+    <el-card class="box-card" v-loading="loading" element-loading-text="拼命加载中">
+        <el-table highlight-current-row stripe border :data="tableData" tooltip-effect="dark" style="width: 100%"
+            :default-sort="{prop: 'date', order: 'descending'}">
+            <el-table-column label="序号" width="80" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.id }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="门店名称" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.shopName }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="分公司名称" width="160" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.companyName }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="督导姓名" width="160" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.supervisorName }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="检查分数" width="160" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.getScore }}分</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="时间" width="160" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.createdAt }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="操作">
+                <template slot-scope="scope">
+                    <el-dropdown @command="openEdit">
+                        <span class="el-dropdown-link" style="color:cornflowerblue">
+                            操作<i class="el-icon-arrow-down el-icon--right"></i>
+                        </span>
+                        <el-dropdown-menu slot="dropdown">
+                            <!-- <el-dropdown-item :command="scope">编辑</el-dropdown-item> -->
+                            <el-dropdown-item :command="commandValue(5,scope.row.id,scope.row)">详情</el-dropdown-item>
+                            <!-- <el-dropdown-item :command="commandValue(-2,scope.row.id)">删除</el-dropdown-item> -->
+                        </el-dropdown-menu>
+                    </el-dropdown>
+                </template>
+            </el-table-column>
+        </el-table>
+        <template>
+            <div class="block">
+                <div class="space"></div>
+                <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange"
+                    :current-page="currentPage" :page-sizes="[5, 10, 15, 20]" :page-size="10"
+                    layout="total, sizes, prev, pager, next, jumper" :total="total">
+                </el-pagination>
+            </div>
+        </template>
+    </el-card>
+
+
+    <el-dialog title="紫阳明珠店打分记录详情" :visible.sync="dialogVisible" width="50%" :before-close="handleClose">
+
+        <div class="info">
+            <ul class="fl w50">
+                <li>门店名称：煌上煌紫阳明珠店</li>
+                <li>检查人：张三</li>
+                <li>店长:王小二</li>
+                <li>检查分数:<span style="color:#f00;">280分</span>(满分300分)</li>
+            </ul>
+            <ul class="fl w50">
+                <li>所属分公司：江西分公司</li>
+                <li>检查时间：2018.10.25 14:20</li>
+                <li>联系方式: 1386894157</li>
+                <li>打分合影:<img width="80" height="80" style="vertical-align: text-top;"
+                        src="https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=2594954460,618903872&fm=27&gp=0.jpg"
+                        alt=""></li>
+            </ul>
+        </div>
+
+        <div class="con">
+            <h4>厨房卫生</h4>
+            <div>
+                <p class="qu-title">1、餐中盈余时间“六主动”（点烟、换骨碟、换烟缸、添茶、倒酒、清理台面）5分/人</p>
+                <el-radio-group style="margin-left:50px;" v-model="question.select">
+                    <el-radio label="15分"></el-radio>
+                    <el-radio label="10分"></el-radio>
+                    <el-radio label="5分"></el-radio>
+                    <el-radio label="0"></el-radio>
+                </el-radio-group>
+            </div>
+            <div>
+                <p class="qu-title">2、每旬对员工员工悦客服务的课程一次（每次培训不低于40分钟，不含新生。每旬10分有培训、不清晰得5分，无培训0分）</p>
+                <el-radio-group style="margin-left:50px;" v-model="question.select">
+                    <el-radio label="15分"></el-radio>
+                    <el-radio label="10分"></el-radio>
+                    <el-radio label="5分"></el-radio>
+                    <el-radio label="0"></el-radio>
+                </el-radio-group>
+            </div>
+        </div>
+        <div class="con">
+            <h4>厨房卫生</h4>
+            <div>
+                <p class="qu-title">1、餐中盈余时间“六主动”（点烟、换骨碟、换烟缸、添茶、倒酒、清理台面）5分/人</p>
+                <el-radio-group style="margin-left:50px;" v-model="question.select">
+                    <el-radio label="15分"></el-radio>
+                    <el-radio label="10分"></el-radio>
+                    <el-radio label="5分"></el-radio>
+                    <el-radio label="0"></el-radio>
+                </el-radio-group>
+            </div>
+            <div>
+                <p class="qu-title">2、每旬对员工员工悦客服务的课程一次（每次培训不低于40分钟，不含新生。每旬10分有培训、不清晰得5分，无培训0分）</p>
+                <el-radio-group style="margin-left:50px;" v-model="question.select">
+                    <el-radio label="15分"></el-radio>
+                    <el-radio label="10分"></el-radio>
+                    <el-radio label="5分"></el-radio>
+                    <el-radio label="0"></el-radio>
+                </el-radio-group>
+            </div>
+        </div>
+        <el-button style="margin:20px 0 10px 25px;" @click="dialogVisible=false">返回列表</el-button>
+    </el-dialog>
+</div>

@@ -1,0 +1,239 @@
+<div class="file">
+    <!-- 搜索 -->
+    <el-card class="box-card">
+        <template>
+            <el-tabs v-model="activeName" @tab-click="handleClick">
+                <!-- <el-tab-pane label="全部" name="-1">
+                        <span slot="label"> 全部
+                            <sup class="badge-number badge-info">{{count.all}}</sup>
+                        </span>
+                    </el-tab-pane> -->
+                <el-tab-pane label="分公司排行" name="1">
+                </el-tab-pane>
+                <el-tab-pane label="总部排行" name="2">
+                </el-tab-pane>
+            </el-tabs>
+        </template>
+
+        <div class="space"></div>
+
+        <el-form :inline="true" class="demo-form-inline">
+            <div>
+                <el-form-item>
+                    <template>
+                        <el-select filterable v-model="selectType" @change='typeChange' placeholder="请选择搜索类型"
+                            class="findShop">
+                            <el-option label="单学期" value="1"></el-option>
+                            <el-option label="单月" value="2"></el-option>
+                            <el-option label="多月" value="3"></el-option>
+                            <el-option label="多学期" value="4"></el-option>
+                        </el-select>
+                    </template>
+                    <el-form-item style="margin-left: 10px" v-if='selectType==2' key='99'>
+                        <el-date-picker value-format="yyyy-MM" type="month" v-model="search.month">
+                        </el-date-picker>
+                    </el-form-item>
+                    <el-form-item style="margin-left: 10px" v-if='selectType==3' key='10'>
+                        <el-date-picker value-format="yyyy-MM" type="monthrange" v-model="months">
+                        </el-date-picker>
+                    </el-form-item>
+                    <template v-if='selectType==1'>
+                        <el-select style="margin:0 10px;" filterable v-model="search.termId" placeholder="请选择学期"
+                            class="findShop">
+                            <el-option v-for="item in termList" :key="item.id" :label="item.name" :value="item.id">
+                            </el-option>
+                        </el-select>
+                    </template>
+                    <template v-if='selectType==4'>
+                        <el-select style="margin:0 10px;width:300px;" multiple filterable v-model="termIds"
+                            @change="termChange" :multiple-limit='2' placeholder="请选择学期" class="findShop">
+                            <el-option v-for="item in termList" :key="item.id" :label="item.name" :value="item.id">
+                            </el-option>
+                        </el-select>
+                    </template>
+                    <template v-if="roleId != 3">
+                        <el-select filterable v-model="search.companyId" placeholder="请选择公司" class="findShop">
+                            <el-option key="" label="全部分公司" value=""></el-option>
+                            <el-option v-for="item in companyList" :key="item.id" :label="item.name" :value="item.id">
+                            </el-option>
+                        </el-select>
+                    </template>
+                    <el-form-item style="margin-left:10px;" v-if='search.type!=2'>
+                        <el-input style="width:260px;" @keyup.enter.native="getList" clearable v-model="search.keyWord"
+                            placeholder="分店关键词搜索">
+                        </el-input>
+                    </el-form-item>
+                </el-form-item>
+            </div>
+            <div class="text item">
+                <el-form-item>
+                    <el-button type="primary" @click="getList">搜索</el-button>
+                    <el-button type="primary" @click="onRest">重置</el-button>
+                    <el-button @click="exportExcel" icon="el-icon-download" style="margin-left: 20px" type="info"
+                        :disable="exportDisable" :loading="exportDisable">导出</el-button>
+                </el-form-item>
+            </div>
+        </el-form>
+    </el-card>
+    <div class="space"></div>
+    <!-- 表格 -->
+    <el-card class="box-card" v-loading="loading" element-loading-text="拼命加载中">
+        <el-table v-if='selectType==1||selectType==2' key='3' ref="multipleTable" highlight-current-row stripe border
+            :data="tableData" tooltip-effect="dark" style="width: 100%"
+            :default-sort="{prop: 'date', order: 'descending'}">
+            <el-table-column prop="company" label="分公司名称" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.companyName }}</span>
+                </template>
+            </el-table-column>
+
+            <el-table-column prop="name" label="门店名称" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.shopName }}</span>
+                </template>
+            </el-table-column>
+
+            <!-- <el-table-column prop="time" label="时间" srortable>
+                        <template slot-scope="scope">
+                            <span>{{ scope.row.createdAt }}</span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="term" label="学期" srortable>
+                            <template slot-scope="scope">
+                                <span>{{ scope.row.termName }}</span>
+                            </template>
+                        </el-table-column> -->
+            <el-table-column prop="score" label="检查分数" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.score }} <span v-if='scope.row.isAvg==1' style="color:red;">(平均分)</span> </span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="sort" label="排名" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.ranking }}</span>
+                </template>
+            </el-table-column>
+        </el-table>
+        <el-table v-if='selectType==3' key='5' ref="multipleTable" highlight-current-row stripe border
+            :data="tableData" tooltip-effect="dark" style="width: 100%"
+            :default-sort="{prop: 'date', order: 'descending'}">
+
+            <el-table-column prop="sort" type='index' label="序号" srortable>
+            </el-table-column>
+            <el-table-column prop="name" label="门店名称" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.shopName }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="company" label="分公司名称" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.companyName }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column v-if='months.length>0' key='110' :label="months[0]+'月'">
+                <el-table-column prop="score" label="检查分数" srortable>
+                    <template slot-scope="scope">
+                        <span>{{ scope.row.score }} <span v-if='scope.row.isAvg==1' style="color:red;">(平均分)</span>
+                        </span>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="score" label="排名" srortable>
+                    <template slot-scope="scope">
+                        <span>{{ scope.row.rank }}</span>
+                    </template>
+                </el-table-column>
+            </el-table-column>
+            <el-table-column v-if='months.length>0' key='100' :label="months[1]+'月'">
+                <el-table-column prop="score" label="检查分数" srortable>
+                    <template slot-scope="scope">
+                        <span>{{ scope.row.rankTwo&&scope.row.rankTwo.score }} <span v-if='scope.row.rankTwo&&scope.row.rankTwo.isAvg==1'
+                                style="color:red;">(平均分)</span> </span>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="score" label="排名" srortable>
+                    <template slot-scope="scope">
+                        <span>{{ scope.row.rankTwo&&scope.row.rankTwo.rank }} </span>
+                    </template>
+                </el-table-column>
+            </el-table-column>
+            <el-table-column v-if='termIds.length>0' key='13' :label="termOne||'2019下学期'">
+                <el-table-column prop="score" label="检查分数" srortable>
+                    <template slot-scope="scope">
+                        <span>{{ scope.row.score }} <span v-if='scope.row.isAvg==1' style="color:red;">(平均分)</span>
+                        </span>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="score" label="排名" srortable>
+                    <template slot-scope="scope">
+                        <span>{{ scope.row.rank }}</span>
+                    </template>
+                </el-table-column>
+            </el-table-column>
+            <el-table-column v-if='termIds.length>0' key='12' :label="termTwo||'2019上学期'">
+                <el-table-column prop="score" label="检查分数" srortable>
+                    <template slot-scope="scope">
+                        <span v-if='scope.row.rankTwo'>{{ scope.row.rankTwo.score }} <span
+                                v-if='scope.row.rankTwo.isAvg==1' style="color:red;">(平均分)</span> </span>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="score" label="排名" srortable>
+                    <template slot-scope="scope">
+                        <span v-if='scope.row.rankTwo'>{{ scope.row.rankTwo.rank }} </span>
+                    </template>
+                </el-table-column>
+            </el-table-column>
+        </el-table>
+        <el-table v-if='selectType==4' key='8' ref="multipleTable" highlight-current-row stripe border
+        :data="tableData" tooltip-effect="dark" style="width: 100%"
+        :default-sort="{prop: 'date', order: 'descending'}">
+
+        <el-table-column prop="sort" type='index' label="序号" srortable>
+        </el-table-column>
+        <el-table-column prop="name" label="门店名称" srortable>
+            <template slot-scope="scope">
+                <span>{{ scope.row[0].shopName }}</span>
+            </template>
+        </el-table-column>
+        <el-table-column prop="company" label="分公司名称" srortable>
+            <template slot-scope="scope">
+                <span>{{ scope.row[0].companyName }}</span>
+            </template>
+        </el-table-column>
+        <el-table-column v-if='termIds.length>0' key='13' :label="termOne+termIds[0]">
+            <el-table-column prop="score" label="检查分数" srortable>
+                <template slot-scope="scope">
+                    <span>{{ (scope.row[0].termId==termIds[0])?scope.row[0].score:(scope.row[1]&&scope.row[1].score) }} <span v-if='(scope.row[0].termId==termIds[0]?scope.row[0].isAvg:(scope.row[1]&&scope.row[1].isAvg))==1' style="color:red;">(平均分)</span>
+                    </span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="score" label="排名" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row[0].termId==termIds[0]?scope.row[0].rank:(scope.row[1]&&scope.row[1].rank) }}</span>
+                </template>
+            </el-table-column>
+        </el-table-column>
+        <el-table-column  key='12' :label="termTwo+termIds[1]">
+            <el-table-column prop="score" label="检查分数" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row[0].termId==termIds[1]?scope.row[0].score:(scope.row[1]&&scope.row[1].score) }} <span v-if='(scope.row[0].termId==termIds[1]?scope.row[0].isAvg:(scope.row[1]&&scope.row[1].isAvg))==1' style="color:red;">(平均分)</span>
+                    </span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="score" label="排名" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row[0].termId==termIds[1]?scope.row[0].rank:(scope.row[1]&&scope.row[1].rank) }}</span>
+                </template>
+            </el-table-column>
+        </el-table-column>
+    </el-table>
+        <template>
+            <div class="block">
+                <div class="space"></div>
+                <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange"
+                    :current-page="currentPage" :page-sizes="[5, 10, 15, 20]" :page-size="10" :total="total"
+                    layout="total, sizes, prev, pager, next, jumper" prev-text="上一页" next-text="下一页">
+                </el-pagination>
+            </div>
+        </template>
+    </el-card>
+</div>

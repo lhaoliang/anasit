@@ -1,0 +1,53 @@
+<div class="branch">
+
+<h3 class="title">{{cateName}} <el-button @click='show' style="margin-left:30px;" type='primary'>添加检查项</el-button></h3>
+
+        <div class="con" v-for='(item,index) in itemList' ::key="index">
+            <div >
+                <p class="qu-title">{{index+1}}.{{item.title}}</p>
+                <el-radio-group style="margin-left:50px;">
+                    <el-radio v-for='el in item.option' :key="el.id" :label="el.score">{{el.content}}</el-radio>
+                </el-radio-group>
+                <div style="margin:10px 0;margin-left: 20px;"> 
+                    <el-button size='mini'  @click='edit(item)' icon="el-icon-edit">编辑</el-button>
+                    <el-button size='mini' @click='del(item)' icon="el-icon-delete">删除</el-button>
+                    <el-button size='mini' v-if="index != 0" @click='toTop(item)' icon="el-icon-upload2">最前</el-button>
+                    <el-button size='mini' v-if="index != itemList.length-1" @click='toDown(index,item,itemList)' icon="el-icon-download">下移</el-button>
+                    <el-button size='mini' v-if="index != 0" @click='toUp(index,item,itemList)' icon="el-icon-upload2">上移</el-button>
+                </div>
+            </div>
+        </div>
+        <el-button style="margin:20px 0 10px 25px;" @click="turn">返回列表</el-button>
+        <el-dialog
+        :title="type=='add'?'添加检查项':'编辑检查项'"
+        :visible.sync="dialogVisible"
+        width="50%"
+        :before-close="handleClose">
+        <el-form :model="form">
+            <el-form-item label="检查项" :label-width="formLabelWidth">
+                <el-input placeholder="请输入检查项标题" type="textarea" v-model="form.title" auto-complete="off"></el-input>
+            </el-form-item>
+            <el-form-item label="检查项满分" :label-width="formLabelWidth">
+                <el-input type="number" min="0" placeholder="请输入检查项总分" v-model="form.total" auto-complete="off"></el-input>
+            </el-form-item>
+            <el-form-item label="选项文字" :label-width="formLabelWidth">
+               <div style="margin-bottom:6px;" v-for="(item,index) in form.itemList" :key="index">
+                    <el-input style="width:40%" v-model="item.content" placeholder="请输入选项内容" auto-complete="off"></el-input>
+                    <el-input type="number" min="0" style="width:40%" v-model="item.score" placeholder="请输入选项分数" auto-complete="off"></el-input>
+                    <span class="hands" @click='addRowsFirst(index)'>㊉</span> 
+                    <span class="hands" v-show="index!=0" @click='delItem(index)'>⊗</span>
+                    <span class="hands" v-show="index != 0" @click="up(index,item,form.itemList)">↑</span>
+                    <span class="hands" v-show="index !=form.itemList.length-1" @click="down(index,item,form.itemList)">↓</span>
+                    
+                </div>
+            </el-form-item>
+        </el-form>
+        <span slot="footer" class="dialog-footer">
+            <el-button @click="cancle">取 消</el-button>
+            <el-button v-if="type=='add'" type="primary" @click="addItem">确 定</el-button>
+            <el-button v-if="type=='edit'" type="primary" @click="editItem">确定编辑</el-button>
+
+        </span>
+        </el-dialog>
+</div>
+

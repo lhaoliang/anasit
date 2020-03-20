@@ -1,0 +1,139 @@
+<div class="branch" v-loading="importLoading">
+  <!-- 搜索 -->
+  <el-card class="box-card" v-if="isShow==1">
+
+    <div class="text item">
+      <el-form :inline="true" :model="search" class="demo-form-inline">
+        <el-form-item style="display: flex;justify-content: space-between;flex-wrap: nowrap;">
+          <el-button type="primary" @click="forShop('add')" class='mr'>添加分店</el-button>
+
+          <el-dropdown>
+            <el-button type="primary">批量导入</el-button>
+            <el-dropdown-menu slot="dropdown" style="width: 100px;text-align: center;">
+              <el-dropdown-item>
+                <el-button type="text" @click="templateDownload">模板下载</el-button>
+              </el-dropdown-item>
+              <el-dropdown-item>                              
+                <el-upload class="upload-demo" :action="server + '/managerapi/custome/shop/import'" :headers="headers"
+                  :before-upload="beforeExcelUpload" :on-success="excelUploadSuccess" :show-file-list="false" name="upload">
+                  <el-button type="text">批量导入</el-button>
+                </el-upload>
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+
+        </el-form-item>
+
+        <el-form-item>
+          <template v-if="roleId != 3">
+            <el-select filterable v-model="search.companyId" placeholder="请选择分公司" class="findShop">
+              <el-option v-for="item in company" :key="item.id" :label="item.name" :value="item.id">
+              </el-option>
+            </el-select>
+          </template>
+          <el-input v-model="search.keyWord" placeholder="分店/店长关键词检索" style="width: 250px;margin-right: 15px"></el-input>
+          <el-button type="primary" @click="onSubmitSearch" icon="el-icon-search">搜索</el-button>
+          <el-button type="warning" @click="onRest" icon="el-icon-refresh">重置</el-button>
+          <el-button v-if="roleId != 3" @click="exportExcel" icon="el-icon-download" type="info" :disable="exportDisable" :loading="exportDisable">导出</el-button>
+        </el-form-item>
+
+      </el-form>
+    </div>
+  </el-card>
+  <div class="space"></div>
+  <!-- 表格 -->
+  <el-card class="box-card" v-loading="loading" element-loading-text="拼命加载中" v-if="isShow==1">
+    <el-table ref="multipleTable" highlight-current-row stripe border :data="shopList" tooltip-effect="dark" style="width: 100%"
+      :default-sort="{prop: 'date', order: 'descending'}">
+
+      <!-- <el-table-column label="日期"  srortable prop="date">
+            </el-table-column> -->
+      <el-table-column prop="id" label="序号" type="index" srortable width=60>
+
+      </el-table-column>
+      <el-table-column prop="name" label="分店名称" srortable>
+        <template slot-scope="scope">
+          <span>{{ scope.row.name }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="branchName" label="所属分公司" srortable>
+        <template slot-scope="scope">
+          <span>{{ scope.row.company.name}}</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="manager" label="店长姓名" srortable>
+        <template slot-scope="scope">
+          <span>{{ scope.row.manager }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="phone" label="联系电话" srortable>
+        <template slot-scope="scope">
+          <span>{{ scope.row.phone }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="time" label="录入时间" srortable>
+        <template slot-scope="scope">
+          <span>{{ scope.row.createdAt }}</span>
+        </template>
+      </el-table-column>
+
+      <el-table-column label="操作" width=300>
+        <template slot-scope="scope">
+          <div class="dis">
+            <el-button size="mini" type='primary' @click="forShop(scope,scope.$index)">编辑
+            </el-button>
+            <el-button size="mini" type="danger" @click="toDel(scope.row.id)">删除</el-button>
+            <el-button size="mini" @click='goGateList(scope.row.companyId,scope.row.id)'>档口列表</el-button>
+          </div>
+        </template>
+      </el-table-column>
+    </el-table>
+    <template>
+      <div class="block">
+        <div class="space"></div>
+        <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage"
+          :page-sizes="[5, 10, 15, 20]" :page-size="10" layout="total, sizes, prev, pager, next, jumper" :total="total"
+          prev-text="上一页" next-text="下一页">
+        </el-pagination>
+      </div>
+    </template>
+  </el-card>
+  <el-card class="addShop" v-if="isShow==2">
+    <div class="head-title">
+      {{title?'添加分店':'编辑分店'}}
+    </div>
+    <el-form ref="form" :model="form" label-width="140px">
+      <el-form-item label="分店名称:">
+        <el-input v-model="form.name" placeholder="请输入分店名称" style="width: 200px;"></el-input>
+      </el-form-item>
+      <el-form-item label="所属分公司:" v-if="roleId != 3">
+        <el-select filterable v-model="form.companyId" placeholder="请选择对应的分公司" style="width: 200px;">
+          <el-option v-for="item in company" :key="item.id" :label="item.name" :value="item.id">
+          </el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="分店地址:">
+        <el-cascader @change='changeArea' value-key="id" placeholder="请选择省市区" v-model="form.area" :options="address" filterable style="width: 200px;"></el-cascader>
+        <el-input v-model="form.address" placeholder="输入详细地址" style="width: 300px;margin-left: 20px;"></el-input>
+      </el-form-item>
+      <el-form-item label="门店店长:">
+        <el-input v-model="form.manager" placeholder="请输入分店店长姓名" style="width: 200px;"></el-input>
+      </el-form-item>
+      <el-form-item label="负责人电话:">
+        <el-input v-model="form.phone" placeholder="请输入分店负责人电话" style="width: 200px;"></el-input>
+      </el-form-item>
+      <el-form-item label="门店账号:">
+        <el-input v-model="form.account" placeholder="请输入分店账号" style="width: 200px;"></el-input>
+      </el-form-item>
+      <el-form-item label="门店密码:">
+        <el-input v-model="form.password" placeholder="请输入分店密码" style="width: 200px;"></el-input>
+      </el-form-item>
+      <el-form-item style="margin-top: 100px; text-align:left;">
+        <el-button type="primary" v-show="type=='add'" style="margin-right: 30px;" @click='onAdd'>确认添加</el-button>
+        <el-button type="primary" v-show="type=='edit'" style="margin-right: 30px;" @click='onEdit'>确认编辑</el-button>
+        <el-button @click='returnMain'>返回列表</el-button>
+
+      </el-form-item>
+    </el-form>
+  </el-card>
+</div>

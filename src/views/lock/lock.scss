@@ -1,0 +1,21 @@
+.lock-container {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.lock-container::before {
+  z-index: -999;
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("../../assets/images/login.png");
+  background-size: cover;
+}
+.lock-form {
+  width: 300px;
+}

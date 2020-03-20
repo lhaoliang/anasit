@@ -1,0 +1,187 @@
+<div class="file box-container">
+    <!-- 搜索 -->
+    <el-card class="box-card">
+        <template>
+            <el-tabs v-model="activeName" @tab-click="handleClick">
+                <!-- <el-tab-pane label="全部" name="-1">
+                                <span slot="label"> 全部
+                                    <sup class="badge-number badge-info">{{count.all}}</sup>
+                                </span>
+                            </el-tab-pane> -->
+                <el-tab-pane label="公司数值" name="1">
+                </el-tab-pane>
+                <el-tab-pane label="单项目数值" name="2">
+                </el-tab-pane>
+                <el-tab-pane label="区域数值" name="3">
+                </el-tab-pane>
+            </el-tabs>
+        </template>
+
+        <el-form :inline="true" class="demo-form-inline">
+            <div>
+                <el-form-item class="area" style="width:100%;">
+                    <!-- <template>
+                        <el-select style="width:20%" multiple @change="termChange" :multiple-limit='2' filterable
+                            v-model="search.termId" placeholder="请选择学期" class="findShop finds">
+                            <el-option v-for="item in termList" :key="item.id" :label="item.name" :value="item.id">
+                            </el-option>
+                        </el-select>
+                    </template> -->
+                    <template>
+                            <el-date-picker v-model='time' value-format='yyyy-MM'
+                                format="yyyy-MM" type="monthrange" start-placeholder="开始月份" @change='timeChange' end-placeholder="结束月份">
+                            </el-date-picker>
+                        </template>    
+                        <template>
+                            <el-select @change='getWinName' filterable style="margin-left:10px;" v-model="search.windowGenreId"
+                                placeholder="档口类型" class="findShop">
+                                <el-option label='全部类型' value=''></el-option>
+                                <el-option v-for="item in itemTypeDown" :key="item.id" :label="item.name" :value="item.id">
+                                </el-option>
+                            </el-select>
+                        </template>
+                        <template>
+                            <el-select v-if='search.windowGenreId>0' @change='catChange' filterable style="margin-left:10px;"
+                                v-model="itemCateId" placeholder="档口项目类型" class="findShop">
+                                <el-option v-for="item in gateItemSort" :key="item.id" :label="item.name" :value="item.id">
+                                </el-option>
+                            </el-select>
+                        </template>
+                        <template>
+                            <el-select v-if='search.windowGenreId>0' filterable style="margin-left:10px;" @change='getProjectName'
+                                v-model="search.projectId" placeholder="档口项目" class="findShop">
+                                <el-option v-for="item in gateProject" :key="item.id" :label="item.name" :value="item.id">
+                                </el-option>
+                            </el-select>
+                        </template>
+                    <!-- <template>
+                                <el-select filterable v-model="search.companyId" @change='getCompanyList' placeholder="请选择公司" class="findShop"
+                                    style="margin-left: 20px">
+                                    <el-option v-for="item in companyList" :key="item.id" :label="item.name" :value="item.id">
+                                    </el-option>
+                                </el-select>
+                            </template> -->
+                    <template>
+                        <el-cascader style="width:25%" placeholder="请选择区域" v-model='search.shopIds' :limit='1'
+                            :props="{ multiple: true }" collapse-tags :options="companyShop" ></el-cascader>
+                    </template>
+                    <template>
+                        <el-select v-if='search.companyId>0' filterable v-model="search.shopId" @change='getList'
+                            placeholder="请选择门店" class="findShop" style="margin-left: 20px">
+                            <el-option v-for="item in shopList" :key="item.id" :label="item.name" :value="item.id">
+                            </el-option>
+                        </el-select>
+                    </template>
+                    <!-- <el-form-item label="门店名称:">
+                                <el-input style="width:260px;" @keyup.enter.native="getList" clearable v-model="search.keyWord"
+                                    placeholder="分店关键词搜索">
+                                </el-input>
+                            </el-form-item> -->
+                    <!-- <el-form-item label="时间:">
+                                    <el-date-picker value-format="yyyy-MM-dd" type="datetimerange" :picker-options="pickerOptions1" 
+                                        v-model="search.date" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期"
+                                        align="right">
+                                    </el-date-picker>
+                                </el-form-item> -->
+
+                </el-form-item>
+
+            </div>
+            <div class="text item">
+                <el-form-item>
+                    <el-button type="primary" @click="getList">搜索</el-button>
+                    <el-button type="primary" @click="onRest">重置</el-button>
+                    <!-- <el-button @click="exportExcel"  icon="el-icon-download" type="info" :disable="exportDisable" :loading="exportDisable" style="margin-left: 10px">导出</el-button> -->
+                </el-form-item>
+            </div>
+        </el-form>
+    </el-card>
+    <div class="space"></div>
+    <!-- 表格 -->
+    <el-card class="box-card" v-loading="loading" element-loading-text="拼命加载中">
+        <div style="width:100%;overflow-x: auto">
+            <div class="title-table" v-if='time[0]==time[1]' key='30'>{{time[0]}}月{{winName}}{{projectName}}跨区域分析</div>
+            <table v-if='search.yearMonth == search.yearMonthTwo || !search.yearMonthTwo' class="gridtable tav" border :data="tableData"
+                style="min-width: 900px">
+                <thead>
+                    <tr>
+                        <th>序号</th>
+                        <th>所属分公司</th>
+                        <th>分店名称</th>
+                        <th>营业额</th>
+                        <th>实收金额</th>
+                        <th>实收比例</th>
+                    </tr>
+                </thead>
+                <tbody class="gridbody" v-for="(item) in tableData">
+                    <tr style="text-align:center;" v-for="(el,index) in item.shops" ref="hightlight">
+                        <td>{{index+1}}</td>
+                        <td >{{el.company.name}}</td>
+                        <td>{{el.name}}</td>
+                        <td>{{el.turnover}}</td>
+                        <td>{{el.actualMoney}}</td>
+                        <td>{{el.rate}}%</td>
+                    </tr>
+                    <tr style="background: #f6f6f6;color:red;text-align:center;">
+                        <!-- <td style="font-weight:600;"></td>
+                        <td style="font-weight:600;">--</td> -->
+                        <td style="font-weight:600;">总计</td>
+                        <td style="font-weight:600;">--</td>
+                        <td style="font-weight:600;">--</td>
+                        <td style="font-weight:600;">{{item.total ? item.total.totalTurnover : 0}}</td>
+                        <td style="font-weight:600;">{{item.total ? item.total.totalActualMoney : 0}}</td>
+                        <td style="font-weight:600;">{{item.total ? item.total.totalRate: 0}}%</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="title-table" v-if='time[0]!=time[1]' key='31'>{{time[0]}}月和{{time[1]}}月{{winName}}{{projectName}}跨区域分析</div>
+            <table v-if='search.yearMonth != search.yearMonthTwo && !!search.yearMonthTwo' class="gridtable tav" border :data="tableData"
+                style="min-width: 900px">
+                <thead>
+                    <tr>
+                        <th rowspan="2">序号</th>
+                        <th rowspan="2">所属分公司</th>
+                        <th rowspan="2">分店名称</th>
+                        <th colspan="2">营业额</th>
+                        <th colspan="2">实收金额</th>
+                        <th colspan="2">实收比例</th>
+                    </tr>
+                    <tr style="text-align: center;">
+                        <td>{{mouthOne}}月</td>
+                        <td>{{mouthTwo}}月</td>
+                        <td>{{mouthOne}}月</td>
+                        <td>{{mouthTwo}}月</td>
+                        <td>{{mouthOne}}月</td>
+                        <td>{{mouthTwo}}月</td>
+                    </tr>
+                </thead>
+                <tbody class="gridbody" v-for="(item) in tableData">
+                    <tr style="text-align:center;" v-for="(el,index) in item.shops" ref="hightlight">
+                        <td>{{index+1}}</td>
+                        <td>{{el.company.name}}</td>
+                        <td>{{el.name}}</td>
+                        <td>{{el.turnover}}</td>
+                        <td>{{el.turnoverTwo}}</td>
+                        <td>{{el.actualMoney}}</td>
+                        <td>{{el.actualMoneyTwo}}</td>                       
+                        <td>{{el.rate}}%</td>
+                        <td>{{el.rateTwo}}%</td>
+                    </tr>
+                    <tr style="background: #f6f6f6;color:red;text-align:center;">
+    
+                        <td style="font-weight:600;">总计</td>
+                        <td style="font-weight:600;">--</td>
+                        <td style="font-weight:600;">--</td>
+                        <td style="font-weight:600;">{{item.total ? item.total.totalTurnover : 0}}</td>
+                        <td style="font-weight:600;">{{item.total ? item.total.totalTurnoverTwo : 0}}</td>
+                        <td style="font-weight:600;">{{item.total ? item.total.totalActualMoney : 0}}</td>
+                        <td style="font-weight:600;">{{item.total ? item.total.totalActualMoneyTwo : 0}}</td>
+                        <td style="font-weight:600;">{{item.total ? item.total.totalRate : 0}}%</td>
+                        <td>{{item.total.totalRateTwo}}%</td>
+
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </el-card>
+</div>

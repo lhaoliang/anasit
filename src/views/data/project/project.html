@@ -1,0 +1,152 @@
+<div class="file box-container">
+    <!-- 搜索 -->
+    <el-card class="box-card">
+        <template>
+            <el-tabs v-model="activeName" @tab-click="handleClick">
+                <!-- <el-tab-pane label="全部" name="-1">
+                        <span slot="label"> 全部
+                            <sup class="badge-number badge-info">{{count.all}}</sup>
+                        </span>
+                    </el-tab-pane> -->
+                <el-tab-pane label="公司项目数" name="1">
+                </el-tab-pane>
+                <el-tab-pane label="项目流失数" name="2">
+                </el-tab-pane>
+                <el-tab-pane label="单个项目数" name="3">
+                </el-tab-pane>
+                <el-tab-pane v-if='roleId !=3' label="区域项目数" name="4">
+                </el-tab-pane>
+            </el-tabs>
+        </template>
+
+        <el-form :inline="true" class="demo-form-inline">
+            <div>
+                <el-form-item style="width:100%;" class="box-form">
+                    <template>
+                        <el-select style="width:20%;" multiple @change="termChange" :multiple-limit='2' filterable v-model="search.termId"
+                            placeholder="请选择学期" class="findShop">
+                            <el-option v-for="item in termList" :key="item.id" :label="item.name" :value="item.id">
+                            </el-option>
+                        </el-select>
+                    </template>
+                    <template>
+                        <el-select style="margin-left:10px;" v-model="search.windowGenreId" placeholder="档口类型"
+                            class="findShop">
+                            <el-option label='全部类型' value=''></el-option>
+                            <el-option v-for="item in windowList" :key="item.id" :label="item.name" :value="item.id">
+                            </el-option>
+                        </el-select>
+                    </template>
+                    <template>
+                        <el-select v-if='roleId!=3' filterable v-model="search.companyId" @change='getCompanyList'
+                            placeholder="请选择公司" class="findShop" style="margin-left: 20px">
+                            <el-option label='全部分公司' value=''></el-option>
+                            <el-option v-for="item in companyList" :key="item.id" :label="item.name" :value="item.id">
+                            </el-option>
+                        </el-select>
+                    </template>
+                    <template>
+                        <el-select v-if='search.companyId>0' filterable v-model="search.shopId" @change='getList'
+                            placeholder="请选择门店" class="findShop" style="margin-left: 20px">
+                            <el-option label='全部门店' value=''></el-option>
+                            <el-option v-for="item in shopList" :key="item.id" :label="item.name" :value="item.id">
+                            </el-option>
+                        </el-select>
+                    </template>
+                    <!-- <el-form-item label="门店名称:">
+                        <el-input style="width:260px;" @keyup.enter.native="getList" clearable v-model="search.keyWord"
+                            placeholder="分店关键词搜索">
+                        </el-input>
+                    </el-form-item> -->
+                    <!-- <el-form-item label="时间:">
+                            <el-date-picker value-format="yyyy-MM-dd" type="datetimerange" :picker-options="pickerOptions1" 
+                                v-model="search.date" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期"
+                                align="right">
+                            </el-date-picker>
+                        </el-form-item> -->
+
+                </el-form-item>
+
+            </div>
+            <div class="text item">
+                <el-form-item>
+                    <el-button type="primary" @click="getList">搜索</el-button>
+                    <el-button type="primary" @click="onRest">重置</el-button>
+                    <!-- <el-button v-if='roleId!=3' @click="exportExcel" icon="el-icon-download" type="info" :disable="exportDisable" :loading="exportDisable" style="margin-left: 10px">导出</el-button> -->
+                </el-form-item>
+            </div>
+        </el-form>
+    </el-card>
+    <div class="space"></div>
+    <!-- 表格:show-summary='search.termId.length==1' :summary-method="getTotal" show-summary='true' :summary-method="getTotal"-->
+    <el-card class="box-card" v-loading="loading" element-loading-text="拼命加载中">
+        <el-table stripe border class="box-table" :data="tableData" style="width: 100%"
+            :default-sort="{prop: 'date', order: 'descending'}">
+
+            <el-table-column prop="sort" label="序号" width='120'>
+                <template slot-scope="scope">
+                    <span v-if='(scope.$index+1)==tableData.length'>合计：</span>
+                    <span v-else>{{scope.$index+1}}</span>
+                </template>
+            </el-table-column>
+            <el-table-column v-if='search.companyId>0' prop="name" label="门店名称" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.name }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column v-if='search.companyId==""' prop="company" label="分公司名称" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.name }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column v-if='search.companyId>0' prop="company" label="分公司名称" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.company.name }}</span>
+                </template>
+            </el-table-column>
+            <!-- <el-table-column prop="term" align="center" label="项目数" srortable>
+                <el-table-column prop="city" label="上学期">
+                    <template slot-scope="scope">
+                        <span>{{ 1000 }}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="address" label="下学期">
+                    <template slot-scope="scope">
+                        <span>{{ 800 }}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="score" label="项目流失" srortable>
+                    <template slot-scope="scope">
+                        <span>{{ 200 }}</span>
+                    </template>
+                </el-table-column>
+            </el-table-column> -->
+            <el-table-column prop="nums" v-if='search.termId.length==1' label="项目数" :key='key1' srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.nums }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column align='center' v-if='search.termId.length==2' :key='key2' label="项目数" srortable>
+                <el-table-column prop="nums1" :label="termOne">
+                    <template slot-scope="scope">
+                        <span>{{ scope.row.termOneNums }}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="nums2" :label="termTwo">
+                    <template slot-scope="scope">
+                        <span>{{ scope.row.termTwoNums }}</span>
+                    </template>
+                </el-table-column>
+            </el-table-column>
+            </el-table-column>
+            <el-table-column label="操作" v-if='search.termId.length==1' :key="key3">
+                <template slot-scope="scope">
+                    <el-button v-if='search.companyId==""&&(scope.$index+1)!=tableData.length' @click='detail(scope.row)' type="primary" size="medium">详情
+                    </el-button>
+                    <el-button v-if='search.companyId>0&&(scope.$index+1)!=tableData.length' @click='toFilist(scope.row)' type="primary" size="medium">详情
+                    </el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+    </el-card>
+</div>

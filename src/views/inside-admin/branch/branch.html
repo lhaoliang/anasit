@@ -1,0 +1,96 @@
+<div class="branch">
+    <!-- 搜索 -->
+    <el-card class="box-card">
+
+        <div class="text item">
+            <el-form :inline="true" class="demo-form-inlines">
+                <el-form-item>
+                    <el-input v-model="search.keyWord" placeholder="分公司/经理关键词检索">
+                    </el-input>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="onSubmitSearch" icon="el-icon-search">搜索</el-button>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="warning" @click="onRest" icon="el-icon-refresh">重置</el-button>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="forBranch('add')">添加分公司</el-button>
+                </el-form-item>
+            </el-form>
+        </div>
+    </el-card>
+    <div class="space"></div>
+    <!-- 表格 -->
+    <el-card class="box-card" v-loading="loading" element-loading-text="拼命加载中">
+        <el-table ref="multipleTable" highlight-current-row stripe border :data="branchList" tooltip-effect="dark"
+            style="width: 100%" :default-sort="{prop: 'id'}">
+            <el-table-column label="序号" type="index" width=60>
+
+            </el-table-column>
+            <el-table-column prop="branchName" label="分公司名称" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.name }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="name" label="分公司经理" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.manager }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="phone" label="联系电话" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.phone }}</span>
+                </template>
+            </el-table-column>
+
+            <el-table-column label="操作" width=300>
+                <template slot-scope="scope">
+                    <div class="dis">
+                        <el-button size="mini" type='primary' @click="forBranch(scope)">编辑
+                        </el-button>
+                        <el-button size="mini" type="danger" @click="toDel(scope.row.id)">删除</el-button>
+                        <el-button size="mini" @click="goShopList(scope.row.id)">门店列表</el-button>
+                    </div>
+                </template>
+            </el-table-column>
+        </el-table>
+        <template>
+            <div class="block">
+                <div class="space"></div>
+                <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange"
+                    :current-page="currentPage" :page-sizes="[5, 10, 15, 20]" :page-size="10"
+                    layout="total, sizes, prev, pager, next, jumper" :total="total" prev-text="上一页" next-text="下一页">
+                </el-pagination>
+            </div>
+        </template>
+    </el-card>
+    <!-- 详情弹窗 -->
+    <el-dialog :title="title==true?'添加分公司':'编辑分公司'" :visible.sync="showDetail">
+        <el-form>
+            <el-form-item label="分公司名称:" :label-width="formLabelWidth">
+                <el-input v-model="companyForm.name" auto-complete="off" clearable placeholder='请输入分公司名称'></el-input>
+            </el-form-item>
+            <el-form-item label="分公司经理:" :label-width="formLabelWidth">
+                <el-input v-model="companyForm.manager" auto-complete="off" clearable placeholder='请输入分公司经理姓名'>
+                </el-input>
+            </el-form-item>
+            <el-form-item label="负责人电话:" :label-width="formLabelWidth">
+                <el-input v-model="companyForm.phone" auto-complete="off" clearable placeholder='请输入分公司联系电话'></el-input>
+            </el-form-item>
+            <el-form-item label="账号:" :label-width="formLabelWidth">
+                <el-input v-model="companyForm.account" auto-complete="off" clearable placeholder='请输入分公司账号'></el-input>
+            </el-form-item>
+            <el-form-item label="密码:" :label-width="formLabelWidth">
+                <el-input v-model="companyForm.password" auto-complete="off" clearable placeholder='请输入分公司密码'>
+                </el-input>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button type="primary" v-show="type=='add'" @click="onAdd">确定</el-button>
+            <el-button type="primary" v-show="type=='edit'" @click="onEdit">确定修改</el-button>
+            <el-button @click="returnMain">取 消</el-button>
+        </div>
+    </el-dialog>
+
+</div>

@@ -1,0 +1,61 @@
+.message-page-con {
+    height: 100vh;
+    display: inline-block;
+    vertical-align: top;
+    position: relative;
+}
+.message-category-con {
+    border-right: 1px solid #e6e6e6;
+    width: 200px;
+    .category-title{
+      display: inline-block;
+      width: 65px;
+    }
+}
+.message-list-con{
+  border-right: 1px solid #e6e6e6;
+  width: 430px;
+}
+.message-view-con{
+  position: absolute;
+  left: 660px;
+  top: 140px;
+  right: 16px;
+  bottom: 16px;
+  overflow: auto;
+  padding: 12px 20px 0;
+  .message-view-header{
+    margin-bottom: 20px;
+    .message-view-title{
+      display: inline-block;
+    }
+    .message-view-time{
+      margin-left: 20px;
+    }
+  }
+}
+
+.gray-dadge{
+  background: gainsboro;
+}
+.not-unread-list{
+  .msg-title{
+    color: rgb(170, 169, 169);
+  }
+  .msg-time{
+    color:#000;
+    margin-left:10px;
+    position: relative;
+    bottom: 2px;
+  }
+  .ivu-menu-item{
+    .ivu-btn.ivu-btn-text.ivu-btn-small.ivu-btn-icon-only{
+      display: none;
+    }
+    .ivu-menu-item:hover{
+      .ivu-btn.ivu-btn-text.ivu-btn-small.ivu-btn-icon-only{
+        display: inline-block;
+      }
+    }
+  }
+}

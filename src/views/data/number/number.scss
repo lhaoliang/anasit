@@ -1,0 +1,121 @@
+.box-container {
+    padding: 20px;
+}
+
+.el-card__body {
+    padding: 20px;
+    padding-top: 30px;
+}
+
+.dis {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.space {
+    height: 30px;
+}
+
+.avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+}
+
+.demo-form-inline {
+    display: block;
+
+    .el-autocomplete {
+        margin-right: 10px;
+        width: 250px;
+    }
+}
+
+.cell {
+    text-align: center;
+}
+
+.el-pagination span:not([class*="suffix"]), .el-pagination button {
+    padding: 0 10px;
+}
+
+.el-form-item__label {
+    text-align: left;
+    font-weight: normal;
+}
+
+.el-dialog {
+    padding-left: 30px;
+
+    .el-dialog__title {
+        position: relative;
+        padding-top: 5px;
+        font-weight: bold;
+    }
+
+    .el-dialog__title::after {
+        content: '';
+        position: absolute;
+        display: block;
+        left: -20px;
+        top: 0;
+        z-index: 9999;
+        border-left: 4px solid #999;
+        height: 25px;
+    }
+
+    .el-input {
+        width: 80%;
+    }
+
+    .el-dialog__footer {
+        text-align: center;
+        padding: 0;
+        padding-bottom: 40px;
+
+        .el-button {
+            margin: 0 40px;
+        }
+    }
+}
+
+.head-title {
+    padding: 20px;
+    font-weight: bold;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 40px;
+}
+.gridtable {
+    border-collapse: collapse;
+    width: 100%;
+
+    thead > tr {
+        background: #eef1f6;
+        height: 40px;
+        line-height: 40px;
+    }
+
+    th, td {
+        border: 1px solid #dfe6ec;
+        font-size: 14px;
+        font-weight: normal;
+    }
+
+    .w {
+        width: 120px;
+    }
+
+    tbody > tr {
+        height: 50px;
+        line-height: 50px;
+
+        &:hover {
+            background: #eef1f6;
+        }
+
+        td {
+            padding: 0 10px;
+        }
+    }
+}

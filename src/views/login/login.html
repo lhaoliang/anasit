@@ -1,0 +1,26 @@
+<div class="login-container pull-height" @keyup.enter.native="handleLogin">
+    <div class="login-border  animated fadeInRight">
+      <div class="login-main">
+        <h4 class="login-title">登录后台管理系统
+        </h4>
+        <el-form class="login-form" :rules="loginRules" ref="loginForm" :model="loginForm" label-width="0">
+            <el-form-item prop="username">
+              <el-input size="small" @keyup.enter.native="handleLogin" v-model="loginForm.account" auto-complete="off" placeholder="请输入用户名">
+                <svg-icon icon-class="user" />
+              </el-input>
+            </el-form-item>
+            <el-form-item prop="password">
+              <el-input size="small" @keyup.enter.native="handleLogin" :type="passwordType" v-model="loginForm.password" auto-complete="off" placeholder="请输入密码">
+                <i class="el-icon-view el-input__icon" slot="suffix" @click="showPassword"></i>
+                <svg-icon icon-class="password" />
+              </el-input>
+            </el-form-item>
+            <el-checkbox v-model="checked" @change="rememberAccount">记住账号</el-checkbox>
+            <el-form-item>
+              <el-button type="primary" size="small" @click.native.prevent="handleLogin" class="login-submit">登录</el-button>
+            </el-form-item>
+          </el-form>
+      </div>
+    </div>
+
+  </div>

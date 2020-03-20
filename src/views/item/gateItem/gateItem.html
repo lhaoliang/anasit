@@ -1,0 +1,274 @@
+<div class="file" v-loading="importLoading">
+    <!-- 搜索 -->
+    <el-card class="box-card">
+        <el-tabs v-model="activeName" @tab-click="handleClick">
+            <el-tab-pane label="档口项目" name="first">
+                <div class="space"></div>
+                <el-form :inline="true" class="demo-form-inline">
+                    <div>
+                        <el-form-item>
+                            <el-select filterable v-model="gateItemSearch.projectGenreId" placeholder="请选择档口项目分类">
+                                <el-option v-for="item in itemSortDown" :key="item.id" :label="item.name" :value="item.id"> </el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-input v-model="gateItemSearch.keyWord" placeholder="档口项目关键词检索"></el-input>
+                        </el-form-item>
+
+                        <el-form-item>
+                            <el-button type="primary" @click="searchItem" icon="el-icon-search">搜索 </el-button>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button type="warning" @click="onRestItem" icon="el-icon-refresh">
+                                重置
+                            </el-button>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button type="primary" @click="forGate('add')">添加档口项目</el-button>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button @click="exportExcel" icon="el-icon-download" :disable="exportDisable" :loading="exportDisable" type="info">导出</el-button>
+                        </el-form-item>
+                    </div>
+                </el-form>
+            </el-tab-pane>
+            <el-tab-pane label="档口项目分类" name="second">
+                <div class="space"></div>
+                <el-form :inline="true" class="demo-form-inline">
+                    <div>
+                        <el-form-item>
+                            <el-select filterable v-model="sortSearch.windowGenreId" placeholder="请选择档口项目分类">
+                                <el-option v-for="item in itemTypeDown" :key="item.id" :label="item.name" :value="item.id"> </el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-input v-model="sortSearch.keyWord" placeholder="档口项目分类名称关键词检索" style="width: 250px"> </el-input>
+                        </el-form-item>
+
+                        <el-form-item>
+                            <el-button type="primary" icon="el-icon-search" @click="onSortSearch">搜索 </el-button>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button type="warning" @click="onRestSort" icon="el-icon-refresh">
+                                重置
+                            </el-button>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button type="primary" @click="forSort('add')">添加档口项目分类</el-button>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button @click="exportExcelSort" icon="el-icon-download" type="info" :disable="exportDisable" :loading="exportDisable">导出</el-button>
+                        </el-form-item>
+                    </div>
+                </el-form>
+            </el-tab-pane>
+            <el-tab-pane label="项目类型" name="third">
+                <div class="space"></div>
+                <el-form :inline="true" class="demo-form-inline">
+                    <div class="text item"></div>
+                    <div style="display: flex; flex-wrap: nowrap;">
+                        <el-form-item>
+                            <el-button type="primary" @click="forType('add')">添加档口类型</el-button>
+                        </el-form-item>
+                    </div>
+                </el-form>
+            </el-tab-pane>
+        </el-tabs>
+    </el-card>
+    <!--档口项目-->
+    <div class="space"></div>
+    <!-- 表格 -->
+    <el-card class="box-card" v-loading="loading" element-loading-text="拼命加载中" v-if="activeName=='first'">
+        <el-table ref="multipleTable" highlight-current-row stripe border :data="itemList" tooltip-effect="dark" style="width: 100%" :default-sort="{prop: 'date', order: 'descending'}">
+            <el-table-column prop="id" label="序号" type="index" srortable width="60"> </el-table-column>
+            <el-table-column prop="name" label="档口项目" srortable width="500">
+                <template slot-scope="scope">
+                    <el-popover placement="bottom" trigger="hover" width="300">
+                        {{ scope.row.name }}
+                        <span
+                            slot="reference"
+                            style="white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;"
+                            >{{ scope.row.name }}</span
+                        >
+                    </el-popover>
+                </template>
+            </el-table-column>
+            <el-table-column prop="sort" label="档口项目分类" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.projectGenre[0].name }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="type" label="档口类型" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.windowGenre[0].name }}</span>
+                </template>
+            </el-table-column>
+
+            <el-table-column label="操作">
+                <template slot-scope="scope">
+                    <div class="dis">
+                        <el-button size="mini" type="primary" @click="forGate(scope)">编辑 </el-button>
+                        <el-button size="mini" type="danger" @click="toDelGate(scope.row.id)">删除</el-button>
+                    </div>
+                </template>
+            </el-table-column>
+        </el-table>
+        <template>
+            <div class="block">
+                <div class="space"></div>
+                <el-pagination
+                    background
+                    @size-change="handleProjectSizeChange"
+                    @current-change="handleProjectCurrentChange"
+                    :current-page="projectCurrentPage"
+                    :page-sizes="[5, 10, 15, 20]"
+                    :page-size="10"
+                    layout="total, sizes, prev, pager, next, jumper"
+                    :total="projectTotal"
+                    prev-text="上一页"
+                    next-text="下一页"
+                >
+                </el-pagination>
+            </div>
+        </template>
+    </el-card>
+    <!--档口项目弹框-->
+    <el-dialog :title="title?'添加档口项目':'编辑档口项目'" :visible.sync="showGate">
+        <div class="space"></div>
+        <el-form :model="forGateItem">
+            <el-form-item label="档口项目名称:" :label-width="formLabelWidth">
+                <el-input v-model="forGateItem.name" auto-complete="off" clearable placeholder="如:拉面,烩面等"> </el-input>
+            </el-form-item>
+
+            <el-form-item label="所属项目分类:" :label-width="formLabelWidth" class="itemSort">
+                <el-select filterable v-model="forGateItem.projectGenreId" placeholder="请选择档口项目">
+                    <el-option v-for="item in itemSortDown" :key="item.id" :label="item.name" :value="item.id"> </el-option>
+                </el-select>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button type="primary" v-show="type=='add'" style="margin-right: 30px;" @click="onAddGate">确定 </el-button>
+            <el-button type="primary" v-show="type=='edit'" style="margin-right: 30px;" @click="onEditGate"> 确定</el-button>
+            <el-button @click="ItemCancel">取消</el-button>
+        </div>
+    </el-dialog>
+
+    <!--档口项目分类-->
+    <el-card class="box-card" v-loading="loading" element-loading-text="拼命加载中" name="second" v-if="activeName=='second'">
+        <el-table ref="multipleTable" highlight-current-row stripe border :data="sortList" tooltip-effect="dark" style="width: 100%" :default-sort="{prop: 'date', order: 'descending'}">
+            <el-table-column prop="id" label="序号" type="index" srortable width="60"> </el-table-column>
+            <el-table-column prop="sort" label="档口项目分类" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.name }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="type" label="档口类型" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.windowGenre.length > 0 ? scope.row.windowGenre[0].name : '' }}</span>
+                </template>
+            </el-table-column>
+
+            <el-table-column label="操作">
+                <template slot-scope="scope">
+                    <div class="dis">
+                        <el-button size="mini" type="primary" @click="forSort(scope)">编辑 </el-button>
+                        <el-button size="mini" type="danger" @click="toDelSort(scope.row.id)">删除</el-button>
+                    </div>
+                </template>
+            </el-table-column>
+        </el-table>
+        <template>
+            <div class="block">
+                <div class="space"></div>
+                <el-pagination
+                    background
+                    @size-change="handleItemSizeChange"
+                    @current-change="handleItemCurrentChange"
+                    :current-page="projectCurrentPage"
+                    :page-sizes="[5, 10, 15, 20]"
+                    :page-size="10"
+                    layout="total, sizes, prev, pager, next, jumper"
+                    :total="itemTotal"
+                    prev-text="上一页"
+                    next-text="下一页"
+                >
+                </el-pagination>
+            </div>
+        </template>
+    </el-card>
+    <!--档口项目分类弹框-->
+    <el-dialog :title="title?'添加档口项目分类':'编辑档口项目分类'" :visible.sync="showSort">
+        <div class="space"></div>
+        <el-form :model="forSortItem">
+            <el-form-item label="项目分类名称:" :label-width="formLabelWidth">
+                <el-input v-model="forSortItem.name" auto-complete="off" clearable placeholder="请输入项目分类名称"> </el-input>
+            </el-form-item>
+
+            <el-form-item label="档口类型:" :label-width="formLabelWidth">
+                <el-select filterable v-model="forSortItem.windowGenreId" placeholder="请选择档口类型">
+                    <el-option v-for="item in itemTypeDown" :key="item.id" :label="item.name" :value="item.id"> </el-option>
+                </el-select>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button type="primary" v-show="type=='add'" style="margin-right: 30px;" @click="onAddSort">确定 </el-button>
+            <el-button type="primary" v-show="type=='edit'" style="margin-right: 30px;" @click="onEditSort"> 确定</el-button>
+            <el-button @click="sortCancel">取消</el-button>
+        </div>
+    </el-dialog>
+
+    <!--项目类型-->
+    <el-card class="box-card" v-loading="loading" element-loading-text="拼命加载中" v-if="activeName=='third'">
+        <el-table ref="multipleTable" highlight-current-row stripe border :data="typeList" tooltip-effect="dark" style="width: 100%">
+            <el-table-column prop="id" label="序号" type="index" width="60"> </el-table-column>
+            <el-table-column prop="type" label="档口类型名称" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.name}}</span>
+                </template>
+            </el-table-column>
+
+            <el-table-column label="操作">
+                <template slot-scope="scope">
+                    <div class="dis">
+                        <el-button size="mini" type="primary" @click="forType(scope)">编辑 </el-button>
+                        <el-button size="mini" type="danger" @click="toDelType(scope.row.id)">删除</el-button>
+                    </div>
+                </template>
+            </el-table-column>
+        </el-table>
+        <template>
+            <div class="block">
+                <div class="space"></div>
+                <el-pagination
+                    background
+                    @size-change="handleTypeSizeChange"
+                    @current-change="handleTypeCurrentChange"
+                    :current-page="typeCurrentPage"
+                    :page-sizes="[5, 10, 15, 20]"
+                    :page-size="10"
+                    layout="total, sizes, prev, pager, next, jumper"
+                    :total="typeTotal"
+                    prev-text="上一页"
+                    next-text="下一页"
+                >
+                </el-pagination>
+            </div>
+        </template>
+    </el-card>
+    <!--档口项目弹框-->
+    <el-dialog :title="title?'添加档口类型':'编辑档口类型'" :visible.sync="showType">
+        <div class="space"></div>
+        <el-form :model="forGateType">
+            <el-form-item label="档口类型名称:" :label-width="formLabelWidth">
+                <el-input v-model="forGateType.name" auto-complete="off" clearable placeholder="请输入档口类型名称"> </el-input>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button type="primary" v-show="type=='add'" style="margin-right: 30px;" @click="onAddType">确定 </el-button>
+            <el-button type="primary" v-show="type=='edit'" style="margin-right: 30px;" @click="onEditType"> 确定</el-button>
+            <el-button @click="typeCancel">取消</el-button>
+        </div>
+    </el-dialog>
+</div>

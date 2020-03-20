@@ -1,0 +1,111 @@
+<div class="branch">
+    <!-- 搜索 -->
+    <el-card class="box-card">
+
+        <div class="text item">
+            <el-form :inline="true" :model="search" class="demo-form-cycle">
+
+                <el-form-item>
+                    <el-input v-model="search.keyWord" placeholder="周期关键词检索" style="width: 250px">
+                    </el-input>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" icon="el-icon-search" @click="onSubmitSearch">搜索</el-button>
+
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="warning" icon="el-icon-refresh" @click="onRest">重置</el-button>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="addCycle">添加周期</el-button>
+                </el-form-item>
+            </el-form>
+        </div>
+    </el-card>
+    <div class="space"></div>
+    <!-- 表格 -->
+    <el-card class="box-card" element-loading-text="拼命加载中">
+        <el-table ref="multipleTable" highlight-current-row stripe border :data="termList" tooltip-effect="dark"
+            style="width: 100%" :default-sort="{prop: 'date', order: 'descending'}">
+            <el-table-column prop="id" label="序号" type="index" srortable width=60>
+
+            </el-table-column>
+            <el-table-column prop="cycleName" label="周期名称" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.name }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="time" label="时间段" srortable>
+                <template slot-scope="scope">
+                    <span>
+                        {{ scope.row.startDate }}—{{ scope.row.endDate }}
+                    </span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="createTime" label="创建时间" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.createdAt }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="操作" width=300>
+                <template slot-scope="scope">
+                    <div class="dis">
+                        <el-button size="mini" type='primary' @click="toEdit(scope)">编辑
+                        </el-button>
+                        <el-button size="mini" type="danger" @click="toDel(scope.row.id)">删除</el-button>
+                    </div>
+                </template>
+            </el-table-column>
+        </el-table>
+        <template>
+            <div class="block">
+                <div class="space"></div>
+                <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange"
+                    :current-page="currentPage" :page-sizes="[5, 10, 15, 20]" :page-size="10"
+                    layout="total, sizes, prev, pager, next, jumper" :total="total" prev-text="上一页" next-text="下一页">
+                </el-pagination>
+            </div>
+        </template>
+    </el-card>
+    <!-- 详情弹窗 -->
+    <el-dialog title=添加周期 :visible.sync="showDetail">
+        <el-form :model="companyForm">
+            <el-form-item label="周期名称:" :label-width="formLabelWidth">
+                <el-input v-model="companyForm.name" auto-complete="off" clearable placeholder='请输入周期名称'></el-input>
+            </el-form-item>
+            <el-form-item label="时间区间:" :label-width="formLabelWidth">
+                <div class="block">
+                    <el-date-picker v-model="companyForm.time" type="monthrange" range-separator="——"
+                        value-format=yyyy-MM start-placeholder="开始月份" end-placeholder="结束月份">
+                    </el-date-picker>
+                </div>
+            </el-form-item>
+
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button type="primary" @click="onAdd">确定</el-button>
+            <el-button @click="showDetail = false">取 消</el-button>
+        </div>
+    </el-dialog>
+
+    <el-dialog title=编辑周期 :visible.sync="showCycle">
+        <el-form :model="addItem">
+            <el-form-item label="周期名称:" :label-width="formLabelWidth">
+                <el-input v-model="addItem.name" auto-complete="off" clearable placeholder='请输入周期名称'></el-input>
+            </el-form-item>
+            <el-form-item label="时间区间:" :label-width="formLabelWidth">
+                <div class="block">
+                    <el-date-picker v-model="addItem.time" type="monthrange" range-separator="——" value-format=yyyy-MM
+                        start-placeholder="开始月份" end-placeholder="结束月份">
+                    </el-date-picker>
+                </div>
+            </el-form-item>
+
+
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button type="primary" @click="onEdit">确定</el-button>
+            <el-button @click="returnMain">取 消</el-button>
+        </div>
+    </el-dialog>
+</div>

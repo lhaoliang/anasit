@@ -1,0 +1,387 @@
+<div class="sort" v-loading="importLoading">
+    <!-- 搜索 -->
+    <el-card class="box-card" v-if='isShow==1'>
+        <el-form :inline="true" class="demo-form-inline">
+            <el-form-item>
+                <template v-if='roleId != 3'>
+                    <el-select v-model="companySearch.termId" filterable placeholder="请选择学期" class="findShop"
+                        style="margin-right:20px">
+                        <el-option v-for="item in termList" :key="item.id" :label="item.name" :value="item.id">
+                        </el-option>
+                    </el-select>
+                </template>
+                <el-input v-model="companySearch.keyWord" placeholder="分公司关键词检索" style="width: 250px"></el-input>
+            </el-form-item>
+
+            <el-form-item>
+                <el-button type="primary" @click="onSearchCompany" icon="el-icon-search">搜索</el-button>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="warning" @click="onRestCompany" icon="el-icon-refresh">重置</el-button>
+            </el-form-item>
+            <el-form-item key='30' v-if='roleId!=3'>
+                <el-dropdown>
+                    <el-button type="primary">批量导入</el-button>
+                    <el-dropdown-menu slot="dropdown" style="width: 100px;text-align: center;">
+                        <el-dropdown-item>
+                            <el-button type="text" @click="templateDownload">模板下载</el-button>
+                        </el-dropdown-item>
+                        <el-dropdown-item>
+                            <!-- <el-upload class="upload-demo"
+                                :action="server + '/managerapi/custome/window/out/import?termId='+this.termId"
+                                :headers="headers" :before-upload="beforeExcelUpload" :on-success="excelUploadSuccess"
+                                :show-file-list="false" name="upload"> -->
+                            <el-button @click='showDialog = true' type="text">批量导入</el-button>
+                            <!-- </el-upload> -->
+                        </el-dropdown-item>
+                    </el-dropdown-menu>
+                </el-dropdown>
+            </el-form-item>
+            <!-- <el-form-item v-if='roleId !=3'>
+                <el-button @click="exportExcelBranch" icon="el-icon-download" type="info">导出</el-button>
+            </el-form-item> -->
+        </el-form>
+    </el-card>
+    <!--分店按钮-->
+    <el-card class="box-card" v-if='isShow==2'>
+        <el-form :inline="true" class="demo-form-inline">
+            <div>
+                <el-form-item>
+                        <template>
+                                <el-select v-if='roleId ==3' v-model="companySearch.termId" filterable placeholder="请选择学期" class="findShop"
+                                    style="margin-right:20px">
+                                    <el-option v-for="item in termList" :key="item.id" :label="item.name" :value="item.id">
+                                    </el-option>
+                                </el-select>
+                            </template>
+                </el-form-item>
+                <el-form-item>
+                        <el-input v-model="shopSearch.keyWord" placeholder="分店关键词检索"></el-input>
+
+                </el-form-item>
+                <el-form-item key='20' v-if='roleId==3'>
+                    <el-dropdown>
+                        <el-button type="primary">批量导入</el-button>
+                        <el-dropdown-menu slot="dropdown" style="width: 100px;text-align: center;">
+                            <el-dropdown-item>
+                                <el-button type="text" @click="templateDownload">模板下载</el-button>
+                            </el-dropdown-item>
+                            <el-dropdown-item>
+                                <!-- <el-upload class="upload-demo"
+                                    :action="server + '/managerapi/custome/window/out/import?termId='+this.termId"
+                                    :headers="headers" :before-upload="beforeExcelUpload" :on-success="excelUploadSuccess"
+                                    :show-file-list="false" name="upload"> -->
+                                <el-button @click='showDialog = true' type="text">批量导入</el-button>
+                                <!-- </el-upload> -->
+                            </el-dropdown-item>
+                        </el-dropdown-menu>
+                    </el-dropdown>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="onSearchShop" icon="el-icon-search">搜索</el-button>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="warning" @click="onRestShop" icon="el-icon-refresh">重置</el-button>
+                </el-form-item>
+                <!-- <el-form-item>
+                    <el-dropdown>
+                        <el-button type="primary">批量导入</el-button>
+                        <el-dropdown-menu slot="dropdown" style="width: 100px;text-align: center;">
+                            <el-dropdown-item>
+                                <el-button type="text" @click="templateDownload">模板下载</el-button>
+                            </el-dropdown-item>
+                            <el-dropdown-item>
+                                <el-upload class="upload-demo"
+                                    :action="server + '/managerapi/custome/window/out/import?termId='+this.termId"
+                                    :headers="headers" :before-upload="beforeExcelUpload"
+                                    :on-success="excelUploadSuccess" :show-file-list="false" name="upload">
+                                <el-button @click='showDialog = true' type="text">批量导入</el-button>
+
+                                </el-upload>
+                            </el-dropdown-item>
+                        </el-dropdown-menu>
+                    </el-dropdown>
+                </el-form-item> -->
+                <!-- <el-form-item v-if='roleId!=3'>
+                    <el-button @click="exportExcelShop" icon="el-icon-download" type="info">导出</el-button>
+                </el-form-item> -->
+            </div>
+        </el-form>
+    </el-card>
+    <!--分店淘汰列表按钮-->
+    <el-card class="box-card" v-if='isShow==3'>
+        <el-form :inline="true" class="demo-form-inline">
+            <div style="display: flex; ">
+                <el-form-item>
+                    <el-input v-model="gateSearch.keyWord" placeholder="档口名称检索" style="width: 250px"></el-input>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="onSearchGate" icon="el-icon-search">搜索</el-button>
+
+                </el-form-item>
+
+                <el-form-item>
+                    <el-button type="warning" @click="onRestGate" icon="el-icon-refresh">重置</el-button>
+                </el-form-item>
+                <el-form-item>
+                    <el-button @click="exportExcelGate" icon="el-icon-download" type="info">导出</el-button>
+                </el-form-item>
+                <el-form-item>
+                    <el-button :disabled='gateList.length==0' style="margin-left: 30px;" @click='showPhoto=true'>查看图片
+                    </el-button>
+                </el-form-item>
+            </div>
+        </el-form>
+    </el-card>
+    <div class="space"></div>
+    <!-- 公司列表 -->
+    <el-card class="box-card" v-loading="loading" element-loading-text="拼命加载中" v-show='isShow==1'>
+        <el-table ref="multipleTable" highlight-current-row stripe border :data="companyList" tooltip-effect="dark"
+            style="width: 100%" :default-sort="{prop: 'date', order: 'descending'}">
+
+            <el-table-column prop="id" label="序号" type="index" srortable width=80>
+
+            </el-table-column>
+            <!--   <el-table-column prop="shopName" label="分店名称" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.shopName }}</span>
+                </template>
+            </el-table-column>-->
+
+
+            <el-table-column prop="branch" label="分公司名称" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.companyName }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="number" label="淘汰数量" srortable width="220">
+                <template slot-scope="scope">
+                    <span>{{ scope.row.windowNum }}</span>
+                </template>
+            </el-table-column>
+
+            <el-table-column label="操作">
+                <template slot-scope="scope">
+                    <div class="dis">
+
+                        <el-button size="mini" type="primary" @click="toNext(scope)">查看</el-button>
+                    </div>
+                </template>
+            </el-table-column>
+        </el-table>
+        <!--     <template>
+            <div class="block">
+                <div class="space"></div>
+                <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange"
+                    :current-page="currentPage" :page-sizes="[5, 10, 15, 20]" :page-size="10"
+                    layout="total, sizes, prev, pager, next, jumper" :total="total" prev-text="上一页" next-text="下一页">
+                </el-pagination>
+            </div>
+        </template>-->
+    </el-card>
+    <!--分店列表-->
+    <el-card class="box-card" v-loading="loading" element-loading-text="拼命加载中" v-show='isShow==2'>
+        <el-table ref="multipleTable" highlight-current-row stripe border :data="shopList" tooltip-effect="dark"
+            style="width: 100%" :default-sort="{prop: 'date', order: 'descending'}">
+
+            <el-table-column prop="id" label="序号" type="index" srortable width='60'>
+
+            </el-table-column>
+            <el-table-column prop="shopName" label="分店名称" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.shopName }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="branch" label="所属分公司" srortable>
+                <template slot-scope="scope">
+                    <span v-if="scope.row.company">{{ scope.row.company.name }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="number" label="淘汰数量" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.windowNum }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="操作">
+                <template slot-scope="scope">
+                    <div class="dis">
+                        <el-button size="mini" type="primary" @click="toLast(scope)">查看</el-button>
+                    </div>
+                </template>
+            </el-table-column>
+        </el-table>
+        <el-button v-if='roleId!=3' style="margin-top:30px;" @click='isShow=1'>返回</el-button>
+    </el-card>
+
+    <!--分店淘汰列表-->
+    <el-card class="box-card" v-loading="loading" element-loading-text="拼命加载中" v-show='isShow==3'>
+        <el-table ref="multipleTable" highlight-current-row stripe border :data="gateList"
+            :span-method="objectSpanMethod" tooltip-effect="dark" style="width: 100%"
+            :default-sort="{prop: 'date', order: 'descending'}">
+
+            <el-table-column prop="id" label="序号" type="index" srortable width=60>
+
+            </el-table-column>
+            <el-table-column prop="gateName" label="档口名称" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.windowName }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="shopName" label="所属分店" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.shopName}}</span>
+                </template>
+            </el-table-column>
+
+            <el-table-column prop="branch" label="所属分公司" srortable>
+                <template slot-scope="scope">
+                    <span>{{scope.row.companyName}}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="human" label="合同签订人" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.cooperatorName }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="idNum" label="签订人身份证号" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.cooperatorIdno }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="upTime" label="上传时间" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.createdAt }}</span>
+                </template>
+            </el-table-column>
+
+            <el-table-column label="操作">
+                <template slot-scope="scope">
+                    <div class="dis">
+                        <el-button v-if='roleId!=3' size="mini" type="primary" @click="toEdit(scope,'edit')">编辑
+                        </el-button>
+                        <el-button size="mini" type="primary" @click="toDetail(scope,'detail')">详情</el-button>
+                    </div>
+                </template>
+            </el-table-column>
+        </el-table>
+        <!--     <template>
+                <div class="block">
+                    <div class="space"></div>
+                    <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange"
+                        :current-page="currentPage" :page-sizes="[5, 10, 15, 20]" :page-size="10"
+                        layout="total, sizes, prev, pager, next, jumper" :total="total" prev-text="上一页" next-text="下一页">
+                    </el-pagination>
+                </div>
+            </template>-->
+        <el-button style="margin-top:30px;" @click='isShow=2'>返回</el-button>
+    </el-card>
+    <!--查看照片-->
+    <div class="photo">
+        <el-card>
+            <el-dialog :visible.sync="showPhoto" width="30%" center>
+                <viewer v-if='gateList.length>0' :images="server+gateList[0].image">
+                    <img style="width:300px;" v-if='gateList.length>0' :src="server+gateList[0].image">
+                </viewer>
+            </el-dialog>
+        </el-card>
+    </div>
+
+    <el-dialog title="提示" :visible.sync="showTip" width="30%" center>
+        <span>该分公司目前没有淘汰计划名单</span>
+        <span slot="footer" class="dialog-footer">
+            <el-button type="primary" @click="showTip = false">确 定</el-button>
+        </span>
+    </el-dialog>
+    <!--编辑淘汰详情-->
+    <el-card class="addShop editPlan" v-show='isShow==4'>
+        <div class="head-title">
+            <span v-if="type=='edit'">编辑淘汰计划</span>
+            <span v-if="type=='detail'">淘汰计划详情</span>
+        </div>
+        <el-form ref="form" :model="editPlan" label-width="140px">
+            <el-form-item label="所属周期:">
+                <el-select v-if="type=='edit'" filterable v-model="editPlan.termId" placeholder="请选择对应周期"
+                    style="width: 300px;">
+                    <el-option v-for="item in termList" :key="item.id" :label="item.name" :value="item.id">
+                    </el-option>
+                </el-select>
+                <span v-show="type=='detail'">{{editPlan.termName}}</span>
+            </el-form-item>
+            <el-form-item label="所属分公司:">
+                <el-select v-model="editPlan.companyId" @change="getCompanyId" filterable v-if="type=='edit'"
+                    placeholder="请选择对应的分公司" style="width: 300px;">
+                    <el-option v-for="item in company" :key="item.id" :label="item.name" :value="item.id">
+                    </el-option>
+                </el-select>
+                <span v-show="type=='detail'">{{editPlan.companyName}}</span>
+            </el-form-item>
+            <el-form-item label="所属分店:">
+                <el-select @change='changeShopDown' v-model="editPlan.shopId" filterable v-if="type=='edit'"
+                    placeholder="请选择所属分店" style="width: 300px;">
+                    <el-option v-for="item in shopList2" :key="item.id" :label="item.name" :value="item.id">
+                    </el-option>
+                </el-select>
+                <span v-show="type=='detail'">{{editPlan.shopName}}</span>
+            </el-form-item>
+            <el-form-item label="档口名称:">
+                <el-select v-model="editPlan.windowId" @change='getWindowInfo' filterable v-if="type=='edit'"
+                    placeholder="请选择档口名称" style="width: 300px;">
+                    <el-option v-for="item in gateProject2" :key="item.id" :label="item.name" :value="item.id">
+                    </el-option>
+                </el-select>
+                <span v-show="type=='detail'">{{editPlan.name}}</span>
+            </el-form-item>
+
+            <el-form-item label="窗口序号:">
+                <el-input disabled v-model="editPlan.sn" v-show="type=='edit'" placeholder="请输入窗口号"
+                    style="width: 300px;">
+                </el-input>
+                <span v-show="type=='detail'">{{editPlan.sn}}</span>
+            </el-form-item>
+            <el-form-item label="签订人姓名:">
+                <el-input disabled v-model="editPlan.cooperatorName" v-show="type=='edit'" placeholder="请选择档口名称"
+                    style="width: 300px;"></el-input>
+                <span v-show="type=='detail'">{{editPlan.cooperatorName}}</span>
+            </el-form-item>
+            <el-form-item label="签订人身份证号:">
+                <el-input disabled v-model="editPlan.cooperatorIdno" v-show="type=='edit'" placeholder="请选择档口名称"
+                    style="width: 300px;"></el-input>
+                <span v-show="type=='detail'">{{editPlan.cooperatorIdno}}</span>
+            </el-form-item>
+            <el-form-item label="淘汰理由:" style="width: 500px;">
+                <el-input type="textarea" v-show="type=='edit'" v-model="editPlan.outReason"></el-input>
+                <span v-show="type=='detail'">{{editPlan.outReason}}</span>
+            </el-form-item>
+            <el-form-item style="margin-top: 30px; text-align:left;">
+                <el-button type="primary" v-show="type=='edit'" style="margin-right: 30px;" @click='onSubmit'>完成
+                </el-button>
+                <el-button @click='isShow=3'>返回列表</el-button>
+            </el-form-item>
+        </el-form>
+
+    </el-card>
+
+    <el-dialog title="模板导入" :visible.sync="showDialog">
+        <el-form ref="form">
+            <el-form-item label="上传图片" label-width="70px">
+                <el-upload class="upload-demo" :auto-upload="false" :on-change="getPhoto" :file-list="imgfileList"
+                    :action="server + '/managerapi/custome/window/out/import'" name='image' :headers="headers">
+                    <el-button size="small" type="primary" plain>点击上传<i class="el-icon-upload el-icon--right"></i>
+                    </el-button>
+                </el-upload>
+            </el-form-item>
+            <el-form-item label="上传文件" label-width="70px">
+                <el-upload class="upload-demo" :auto-upload="false" :file-list="fileList"
+                    :action="server + '/managerapi/custome/window/out/import'" :on-change="imgSaveToUrl"
+                    :before-upload="beforeAvatarUpload" name="upload" :headers="headers">
+                    <el-button size="small" type="primary" plain>点击上传<i class="el-icon-upload el-icon--right"></i>
+                    </el-button>
+                </el-upload>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button @click='cancel'>取 消</el-button>
+            <el-button @click='submit' type="primary">确 定</el-button>
+        </div>
+    </el-dialog>
+</div>

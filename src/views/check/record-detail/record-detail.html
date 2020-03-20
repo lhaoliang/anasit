@@ -1,0 +1,36 @@
+<div>
+    <h3 class="title">{{info.tableName}}</h3>
+    <div class="app-container">
+        <div class="info">
+            <ul class="fl w50">
+                <li v-if="info.shop">门店名称：{{info.shop.name}}</li>
+                <li>检查人：{{info.userName}}</li>
+                <li v-if="info.shop">店长：{{info.shop.manager}}</li>
+                <li>检查分数：<span style="color:#f00;">{{info.getScore}}分</span>(满分{{info.totalScore}}分)</li>
+            </ul>
+            <ul class="fl w50">
+                <li v-if="info.company">所属分公司：{{info.company.name}}</li>
+                <li>检查时间：{{info.createdAt}}</li>
+                <li v-if="info.company">联系方式： {{info.company.phone}}</li>
+                <li>打分合影：<img width="230px" height="230px;" style="vertical-align: text-top; cursor: pointer;" :src="server + info.photo" alt="" @click="viewLargeImage"></li>
+            </ul>
+        </div>
+        <div class="con" style="margin-left:20px;" v-for="el in detail">
+            <h4>{{el.subjectName}}</h4>
+            <div v-if='el.items.length>0' :key="ask.id" v-for="ask in el.items">
+                <p class="qu-title">{{ask.itemTitle}}<span></span></p>
+
+                <el-radio-group style="margin-left:50px;" v-model="ask.checkOptionId">
+                    <el-radio  :key="opt.id" v-for='opt in ask.allOptions' :label="opt.id" > {{opt.content}}
+                        ({{opt.score}}分)</el-radio>
+                </el-radio-group>
+                <!-- <el-radio v-if="ask.option.length>0" :label="ask.option[0].score"></el-radio> -->
+            </div>
+        </div>
+        <el-button style="margin:20px 0 10px 25px;" @click="turn">返回列表</el-button>
+        <el-button style="margin:20px 0 10px 25px;" @click="editScore">确认编辑</el-button>
+    </div>
+    <el-dialog title="查看大图" :visible.sync="viewImage" :before-close="handleClose" style="text-align: center">
+        <span><img :src="server + info.photo"></span>
+    </el-dialog>
+</div>

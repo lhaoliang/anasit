@@ -1,0 +1,272 @@
+*{
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+.box-container {
+    padding: 20px;
+}
+
+.dis {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.space {
+    height: 30px;
+}
+
+
+
+.avatar-uploader .el-upload {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.avatar-uploader .el-upload:hover {
+    border-color: #409EFF;
+}
+
+.avatar-uploader-icon {
+    font-size: 28px;
+    color: #8c939d;
+    width: 178px;
+    height: 178px;
+    line-height: 178px;
+    text-align: center;
+    border: 1px dashed #d9d9d9;
+
+}
+
+.avatar {
+    width: 160px;
+    height: 160px;
+}
+
+.select {
+    width: 100%
+}
+
+#spec {
+
+    .title {
+        padding: 0 12px;
+        line-height: 1;
+        font-size: 18px;
+        border-left: 4px solid #50bfff;
+        color: #666;
+        margin: 0 0 16px 0;
+        font-weight: 400;
+    }
+
+    .specification-setting {
+        .code-area {
+            width: 740px;
+            height: 300px;
+            box-sizing: border-box;
+            padding: 20px;
+            border: 2px dashed #c00;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+    }
+
+    .specification {
+        display: inline-block;
+        vertical-align: top;
+        width: 100%;
+
+        .spec-list {
+            padding: 10px;
+
+            .item {
+                list-style: none;
+                margin-top: 12px;
+
+                &:first-child {
+                    margin-top: 0;
+                }
+
+                .name {
+                    padding: 2px 8px;
+                    text-align: left;
+                    overflow: hidden;
+
+                    .el-input {
+                        width: 150px;
+                    }
+
+                    .icon {
+                        margin-left: 10px;
+                        color: red;
+                        cursor: pointer;
+
+                        &:hover {
+                            color: red;
+                        }
+                    }
+
+                    &:hover {
+                        .icon {
+                            display: inline-block;
+                        }
+                    }
+                }
+
+                .values {
+                    .el-tag {
+                        margin: 8px 0 0 8px;
+                    }
+
+                    .add-attr {
+                        display: inline-block;
+                        vertical-align: top;
+                        margin-top: 4px;
+
+                        .el-input {
+                            width: 200px;
+                            margin: 2px 0 0 8px;
+                        }
+                    }
+                }
+            }
+
+            .add-spec {
+                font-size: 13px;
+            }
+        }
+    }
+
+    .stock-table {
+        width: 100%;
+        padding: 0;
+        border-collapse: separate;
+        border-color: #dfe6ec;
+        border-style: solid;
+        border-width: 1px 0 0 1px;
+        background-color: #fff;
+
+        td,
+        th {
+            padding: 4px 10px;
+            border-bottom: 1px solid #dfe6ec;
+            border-right: 1px solid #dfe6ec;
+        }
+
+        th {
+            line-height: 30px;
+            background-color: #eef1f6;
+        }
+
+        .link {
+            cursor: pointer;
+            color: #0088ee;
+            font-size: 13px;
+            margin-left: 6px;
+        }
+
+        .wh-foot {
+            line-height: 30px;
+
+            .label {
+                display: inline-block;
+                vertical-align: top;
+            }
+
+            .set-list {
+                display: inline-block;
+                vertical-align: top;
+                font-size: 0;
+
+                .set-item {
+                    display: inline-block;
+                    vertical-align: top;
+                    margin-left: 15px;
+                    font-size: 13px;
+                    cursor: pointer;
+                    color: #0088ee;
+                }
+            }
+
+            .set-form {
+                display: inline-block;
+                margin-left: 10px;
+
+                .el-input {
+                    display: inline-block;
+                    width: 120px;
+                }
+
+                .set-btn {
+                    display: inline-block;
+                    padding: 0 2px;
+                    font-size: 15px;
+                    cursor: pointer;
+
+                    &.blue {
+                        color: #0088ee;
+                    }
+
+                    &.red {
+                        color: #cc0000;
+                    }
+                }
+            }
+
+            .right {
+                float: right;
+            }
+
+            .text {
+                font-size: 13px;
+            }
+        }
+    }
+}
+.title{
+    text-align: center;
+    margin-bottom: 15px;
+}
+.qu-title{
+    text-indent: 2em;
+    margin: 16px 0;
+}
+.con:not(:first-child){
+    margin-top: 20px;
+}
+.el-dialog__body{
+    padding: 10px 20px 30px;
+}
+.info{
+    overflow: hidden;
+    padding: 0 40px;
+    box-sizing: border-box;
+}
+.info li{
+    line-height: 40px;
+}
+.fl{
+    float: left;
+}
+.w50{
+    width: 50%;
+}
+.box-form.el-form-item .el-form-item__content{
+    width: 100%;
+} 
+.el-table__footer-wrapper table .has-gutter>tr>td{
+    color: red;
+    font-weight: bold;
+}
+.double .el-table__body-wrapper>.el-table__body>tbody>tr:last-child>td{
+    color: red;
+    font-weight: bold;
+}
+// .el-table__body-wrapper>.el-table__body>tbody>tr:last-child(2)>td{
+//     color: #606266;
+//     font-weight: normal;
+// }

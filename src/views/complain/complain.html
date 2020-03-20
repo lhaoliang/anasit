@@ -1,0 +1,139 @@
+<div class="sort" v-loading="importLoading">
+    <!-- 搜索 -->
+    <el-card class="box-card" v-if='isShow=="1"'>
+        <el-form :inline="true" class="demo-form-inline" style="display: flex; flex-wrap: wrap">
+            <div class="text item">
+                <el-form-item>
+                    <template>
+                        <el-date-picker  @change="getComplainList" value-format=yyyy-MM-dd v-model="valueTime"  format="yyyy-MM-dd" type="daterange" range-separator="——"
+                            start-placeholder="开始日期" end-placeholder="结束日期">
+                        </el-date-picker>
+                    </template>
+                </el-form-item>
+                <el-form-item>
+                    <template>
+                        <el-select v-model="search.status" filterable @change="getComplainList" placeholder="请选择" class="findShop">
+                            <el-option v-for="item in stateList" :key="item.value" :label="item.label"
+                                :value="item.value">
+                            </el-option>
+                        </el-select>
+                    </template>
+                </el-form-item>
+            </div>
+            <div>
+                <el-form-item>
+                    <el-button type='primary' @click='getComplainList'>搜索</el-button>
+                    <el-button type='primary' @click='toReset'>重置</el-button>
+                    <el-button @click="exportExcel" icon="el-icon-download" type="info" :disable="exportDisable" :loading="exportDisable">导出</el-button>
+                </el-form-item>
+            </div>
+        </el-form>
+    </el-card>
+    <div class="space"></div>
+    <!-- 表格 -->
+    <el-card class="box-card" v-loading="loading" element-loading-text="拼命加载中" v-if='isShow=="1"'>
+        <el-table ref="multipleTable" highlight-current-row stripe border :data="complainList" tooltip-effect="dark"
+            style="width: 100%" :default-sort="{prop: 'date', order: 'descending'}">
+
+            <el-table-column prop="id" label="序号" type="index" srortable width=60>
+                
+            </el-table-column>
+            <el-table-column prop="name" label="电话号码" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.phone }}</span>
+                </template>
+            </el-table-column>
+
+            <el-table-column prop="idNum" label="所属门店" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.shop }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="company" label="所属分公司" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.company }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="complain" label="投诉内容" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.content }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="state" label="状态" srortable>
+                <template slot-scope="scope">
+                    <span v-show="scope.row.status==1" style="color: red">待处理</span>
+                    <span v-show="scope.row.status==2">处理中</span>
+                    <span v-show="scope.row.status==3">已处理</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="time" label="投诉时间" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.createdAt }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="操作">
+                <template slot-scope="scope">
+                    <div class="dis">
+                        <el-button size="mini" type='danger' v-show="scope.row.status==1" @click="dealComplain(scope)">处理
+                        </el-button>
+                        <el-button size="mini" type='success' v-show="scope.row.status==2" @click="dealFinish(scope)">完成
+                            </el-button>
+                        <el-button size="mini" type="primary" @click="forComplain(scope)">查看</el-button>
+                    </div>
+                </template>
+            </el-table-column>
+        </el-table>
+        <template>
+            <div class="block">
+                <div class="space"></div>
+                <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange"
+          :current-page="currentPage" :page-sizes="[5, 10, 15, 20]" :page-size="10"
+          layout="total, sizes, prev, pager, next, jumper" :total="total" prev-text="上一页" next-text="下一页">
+        </el-pagination>
+            </div>
+        </template>
+    </el-card>
+    <!-- 详情 -->
+    <el-card class="addShop" v-if='isShow=="2"'>
+        <div class="head-title">
+            <span>投诉详情</span>
+           
+        </div>
+        <el-form ref="form" :model="windows" label-width="100px" size="mini" style="margin-left: 80px;">
+            <el-form-item label="投诉号码:">
+               {{windows.phone}}
+            </el-form-item>
+            <el-form-item label="所属分公司:">
+                    {{windows.company}}
+            </el-form-item>
+            <el-form-item label="所属分店:">
+                    {{windows.shop}}
+            </el-form-item>
+            <el-form-item label="处理状态:">
+                <span v-show="status==1">待处理</span>
+                <span v-show="status==2">处理中</span>
+                <span v-show="status==3">已处理</span>
+                </template>
+            </el-form-item>
+
+
+            <el-form-item label="投诉内容:" style="width: 600px;">
+                
+                <span>{{windows.content}}</span>
+                <div style="display: flex;margin:20px 0;" v-for="img in images">
+                     <a :href="server+img" target="_blank"><img  :src="server+img" style="width:50%; margin-right:20px;"/></a>
+
+                </div>
+            </el-form-item>
+
+            <el-form-item label="投诉时间:">
+                    {{windows.createdAt}}
+            </el-form-item>
+
+            <el-form-item style="margin-top: 30px; text-align:left;">
+                <el-button @click='returnMain'>返回列表</el-button>
+            </el-form-item>
+        </el-form>
+    </el-card>
+
+</div>

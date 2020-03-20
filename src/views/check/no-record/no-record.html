@@ -1,0 +1,131 @@
+<div class="app-container" v-loading="importLoading">
+    <!-- 搜索 -->
+    <el-card class="box-card">
+        <template>
+            <el-tabs v-model="activeName" @tab-click="handleClick">
+                <!-- <el-tab-pane label="全部" name="-1">
+                    <span slot="label"> 全部
+                        <sup class="badge-number badge-info">{{count.all}}</sup>
+                    </span>
+                </el-tab-pane> -->
+                <el-tab-pane label="分公司记录" name="1">
+                    <span slot="label"> 分公司记录
+                    </span>
+                </el-tab-pane>
+                <el-tab-pane label="总部记录" name="2">
+                    <span slot="label"> 总部记录
+                    </span>
+                </el-tab-pane>
+                <el-tab-pane label="未检查名单" name="3">
+                    <span slot="label"> 未检查名单
+                    </span>
+                </el-tab-pane>
+                <!-- <el-tab-pane label="未检测名单" name="2">
+                    <span slot="label"> 未检测名单
+                        <sup class="badge-number badge-info">{{count.end}}</sup>
+                    </span>
+                </el-tab-pane> -->
+            </el-tabs>
+        </template>
+        <div class="text item">
+            <el-form :inline="true" class="demo-form-inline">
+
+                <el-select filterable style="margin-right:10px;" v-model="companySelect" placeholder="公司类型选择">
+                    <el-option clearable label="分公司检查" value="1"></el-option>
+                    <el-option clearable label="总部检查" value="2"></el-option>
+                </el-select>
+
+                <el-form-item v-if="roleId != 3&&companySelect==1">
+                    <el-select filterable style="margin-right:10px;" v-model="search.companyId" placeholder="分公司选择">
+                        <el-option clearable key="" label="全部分公司" value="">
+                        </el-option>
+                        <el-option v-for="item in companyList" clearable :key="item.id" :label="item.name"
+                            :value="item.id">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+
+                <el-form-item v-if='companySelect==1' key='1' label="时间:">
+                    <el-date-picker value-format="yyyy-MM" type="month" v-model="date" align="right">
+                    </el-date-picker>
+                </el-form-item>
+                <el-form-item v-if='companySelect==2' key='2' label="时间:">
+                    <el-date-picker value-format="yyyy" type="year" placeholder="选择年" v-model="date2" align="right">
+                    </el-date-picker>
+                </el-form-item>
+
+                <el-form-item>
+                    <el-button type="primary" icon="el-icon-search" @click="getList">搜索</el-button>
+                    <el-button @click="exportExcel" icon="el-icon-download" type="info" :disable="exportDisable"
+                        :loading="exportDisable">导出</el-button>
+                    <el-button type="warning" @click="onRest" icon="el-icon-refresh">重置</el-button>
+                </el-form-item>
+            </el-form>
+        </div>
+    </el-card>
+    <div class="space"></div>
+    <!-- 表格 -->
+    <el-card class="box-card" v-loading="loading" element-loading-text="拼命加载中">
+        <el-table v-if='companySelect==1' key='9' highlight-current-row stripe border :data="tableData"
+            tooltip-effect="dark" style="width: 100%" :default-sort="{prop: 'date', order: 'descending'}">
+            <el-table-column label="序号" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.$index+1 }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="门店名称" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.name }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="分公司名称" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.company[0].name }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="分公司经理" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.company[0].manager  }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="联系电话" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.company[0].phone }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="状态" srortable>
+                <template slot-scope="scope">
+                    <span>未检查</span>
+                </template>
+            </el-table-column>
+        </el-table>
+        <el-table v-else key='10' highlight-current-row stripe border :data="tableData" tooltip-effect="dark"
+            style="width: 100%" :default-sort="{prop: 'date', order: 'descending'}">
+            <el-table-column label="序号" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.$index+1 }}</span>
+                </template>
+            </el-table-column>
+
+            <el-table-column label="分公司名称" srortable>
+                <template slot-scope="scope">
+                    <span>{{ scope.row.name }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="状态" srortable>
+                <template slot-scope="scope">
+                    <span>未检查</span>
+                </template>
+            </el-table-column>
+        </el-table>
+        <template>
+            <div class="block">
+                <div class="space"></div>
+                <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange"
+                    :current-page="currentPage" :page-sizes="[5, 10, 15, 20]" :page-size="10"
+                    layout="total, sizes, prev, pager, next, jumper" :total="total">
+                </el-pagination>
+            </div>
+        </template>
+    </el-card>
+</div>

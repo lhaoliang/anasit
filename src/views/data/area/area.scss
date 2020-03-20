@@ -1,0 +1,127 @@
+*{
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+.box-container {
+    padding: 20px;
+}
+
+.dis {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.space {
+    height: 30px;
+}
+
+.hidden{
+    display: none;
+}
+
+.avatar-uploader .el-upload {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.avatar-uploader .el-upload:hover {
+    border-color: #409EFF;
+}
+
+.avatar-uploader-icon {
+    font-size: 28px;
+    color: #8c939d;
+    width: 178px;
+    height: 178px;
+    line-height: 178px;
+    text-align: center;
+    border: 1px dashed #d9d9d9;
+
+}
+
+.avatar {
+    width: 160px;
+    height: 160px;
+}
+
+.select {
+    width: 100%
+}
+.qu-title{
+    text-indent: 2em;
+    margin: 16px 0;
+}
+.con:not(:first-child){
+    margin-top: 20px;
+}
+.el-dialog__body{
+    padding: 10px 20px 30px;
+}
+.info{
+    overflow: hidden;
+    padding: 0 40px;
+    box-sizing: border-box;
+}
+.info li{
+    line-height: 40px;
+}
+.fl{
+    float: left;
+}
+.w50{
+    width: 50%;
+}
+.gridtable {
+    border-collapse: collapse;
+    width: 100%;
+
+    thead > tr {
+        background: #eef1f6;
+        height: 40px;
+        line-height: 40px;
+    }
+
+    th, td {
+        border: 1px solid #dfe6ec;
+        font-size: 14px;
+        font-weight: normal;
+    }
+
+    .w {
+        width: 120px;
+    }
+
+    tbody > tr {
+        height: 50px;
+        line-height: 50px;
+
+        &:hover {
+            background: #eef1f6;
+        }
+
+        td {
+            padding: 0 10px;
+        }
+    }
+}
+// .gridtable.tav > .gridbody >tr:not(:first-child)>td:nth-child(1){
+//     display: none;
+// }
+// .gridtable.tav > .gridbody >tr:not(:first-child)>td:nth-child(2){
+//     display: none;
+// }
+// .gridtable.tav > .gridbody >tr{
+//     color: red;
+// }
+.area.el-form-item--medium .el-form-item__content {
+    width: 100%;
+}
+.title{
+    text-align: center;
+    margin-bottom: 30px;
+}
